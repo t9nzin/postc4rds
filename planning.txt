@@ -1,0 +1,9 @@
+from-the-heart: a fun web application that generates beautiful postcard covers given user submitted images & text description, and then
+allows users to send the generated postcard + an attached message to the email of a recipient of their choice
+
+
+flow of app:
+1. landing page (has get started button)
+2. if user clicks on get started button, leads to an "postcard creation" page
+3. the postcard creation page allows the user to upload 1 image and an optional message describing where they are/what they want included in the postcard covers
+4. 

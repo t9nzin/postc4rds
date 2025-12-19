@@ -1,39 +1,113 @@
-'use client';
+import Image from "next/image";
 
-import { useEffect, useState } from 'react';
-
-interface User {
-  id: string;
-  email: string;
-  name: string | null;
-  createdAt: string;
-}
-
-export default function Home() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/users')
-      .then(res => res.json())
-      .then(data => {
-        setUsers(data);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
-
+export default function App() {
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Users</h1>
-      <ul>
-        {users.map(user => (
-          <li key={user.id}>
-            {user.name} - {user.email}
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div className="min-h-screen bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
+      {/* Main Content */}
+      <div className="flex-1 max-w-7xl mx-auto w-full flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center w-full">
+          {/* Left: Heading */}
+          <div>
+            <p className="text-xl text-black md:text-2xl mb-8">
+              from the <em>heart</em>
+            </p>
+            
+            <h1 className="text-6xl text-black md:text-8xl leading-[0.95] tracking-tight">
+              create bespoke,<br />
+              <em>beautiful</em> postcards
+            </h1>
+            
+            <button className="mt-12 px-8 py-4 bg-black text-white hover:bg-black/90 transition-all duration-300 rounded-full">
+              Get Started
+            </button>
+          </div>
+
+          {/* Right: Glass morphism postcards - horizontal */}
+          <div className="relative h-[600px] hidden lg:block">
+            {/* Postcard 1 - Back left */}
+            <div className="absolute top-32 left-0 w-80 rotate-[-6deg] transition-transform hover:rotate-[-8deg] hover:scale-105 duration-300">
+              <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+                <Image
+                  src="/postcard1.jpg"
+                  alt="Beach sunset"
+                  fill 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Postcard 2 - Center */}
+            <div className="absolute top-60 left-12 w-80 rotate-[3deg] transition-transform hover:rotate-[5deg] hover:scale-105 duration-300 z-10">
+              <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+                <Image
+                  src="/postcard2.jpg"
+                  alt="Beach sunset"
+                  fill 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Postcard 3 - Front right */}
+            <div className="absolute top-44 right-0 w-80 rotate-[-3deg] transition-transform hover:rotate-[-5deg] hover:scale-105 duration-300 z-20">
+              <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+                <Image
+                  src="/postcard3.jpg"
+                  alt="City architecture"
+                  fill 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile: Stack postcards below */}
+        <div className="lg:hidden mt-16 relative h-[350px]">
+          {/* Postcard 1 */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 rotate-[-6deg]">
+            <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+              <Image
+                src="/postcard1.jpg"
+                alt="Mountain landscape"
+                fill 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Postcard 2 */}
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 w-72 rotate-[4deg] z-10">
+            <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+              <Image
+                src="/postcard2.jpg"
+                alt="Beach sunset"
+                fill 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Postcard 3 */}
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 w-72 rotate-[-2deg] z-20">
+            <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+              <Image
+                src="/postcard3.jpg"
+                alt="City architecture"
+                fill
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="mt-16 text-center">
+        <p className="text-base md:text-lg text-black">
+          built with love by t9nzin
+        </p>
+      </footer>
+    </div>
   );
 }

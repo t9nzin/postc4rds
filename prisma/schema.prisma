@@ -12,11 +12,28 @@ datasource db {
   provider = "postgresql"
 }
 
-// example model to test prisma
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+model Postcard {
+  id String @id @default(cuid())
+  originalPhotoUrl String
+
+  generatedImageUrl String?
+  aiPrompt String?
+
+  message String
+  recipientEmail String 
+  recipientName String?
+  senderName String 
+
+  location String?
+  style String?
+  status String
+
+  sentAt DateTime?
+  expiresAt DateTime 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([status])
+  @@index([expiresAt])
 }
