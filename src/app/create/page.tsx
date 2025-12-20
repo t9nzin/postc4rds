@@ -24,7 +24,7 @@ export default function CreatePage() {
       {/* Header */}
       <div className="mb-16">
         <Link href="/">
-          <button className="inline-flex items-center gap-2 text-black hover:text-black/60 transition-colors">
+          <button className="inline-flex items-center gap-2 text-black hover:text-black/70 transition-colors">
             <ArrowLeft className="w-5 h-5" />
             Back to home
           </button>

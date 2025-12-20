@@ -20,7 +20,7 @@ export default function App() {
             </h1>
             
             <Link href="/create">
-              <button className="mt-12 px-8 py-4 bg-black text-white hover:bg-black/90 transition-all duration-300 rounded-full">
+              <button className="mt-12 px-8 py-4 bg-black text-white hover:bg-black/70 transition-all duration-300 rounded-full">
                 Get Started
               </button>
             </Link>
