@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+
 
 export default function App() {
   return (
@@ -17,9 +19,11 @@ export default function App() {
               <em>beautiful</em> postcards
             </h1>
             
-            <button className="mt-12 px-8 py-4 bg-black text-white hover:bg-black/90 transition-all duration-300 rounded-full">
-              Get Started
-            </button>
+            <Link href="/create">
+              <button className="mt-12 px-8 py-4 bg-black text-white hover:bg-black/90 transition-all duration-300 rounded-full">
+                Get Started
+              </button>
+            </Link>
           </div>
 
           {/* Right: Glass morphism postcards - horizontal */}

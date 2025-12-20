@@ -1,0 +1,3 @@
+[] refactor: turn postcard into a reusable component 
+[] design + build creation page => make sure to route "get started" button to it 
+[] refactor: move "built with love" footer into layout.tsx
