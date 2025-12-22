@@ -30,11 +30,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full overflow-hidden">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased h-full overflow-hidden`}
       >
-        {children}
+        <div className="h-full flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-hidden">
+            {children}
+          </div>
+
+          {/* Footer */}
+          <footer className="text-center py-6 bg-white flex-shrink-0" style={{ fontFamily: "'Instrument Serif', serif" }}>
+            <p className="text-base md:text-lg text-black">
+              built with love by t9nzin
+            </p>
+          </footer>
+        </div>
       </body>
     </html>
   );

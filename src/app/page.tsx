@@ -4,9 +4,9 @@ import Link from "next/link";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
+    <div className="h-full overflow-hidden bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
       {/* Main Content */}
-      <div className="flex-1 max-w-7xl mx-auto w-full flex items-center">
+      <div className="flex-1 max-w-7xl mx-auto w-full flex items-center overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center w-full">
           {/* Left: Heading */}
           <div>
@@ -105,13 +105,6 @@ export default function App() {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="mt-16 text-center">
-        <p className="text-base md:text-lg text-black">
-          built with love by t9nzin
-        </p>
-      </footer>
     </div>
   );
 }

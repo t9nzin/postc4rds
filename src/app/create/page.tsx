@@ -20,7 +20,7 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
+    <div className="h-full overflow-hidden bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
       {/* Header */}
       <div className="mb-16">
         <Link href="/">
@@ -106,13 +106,6 @@ export default function CreatePage() {
           </button>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="mt-16 text-center">
-        <p className="text-base md:text-lg text-black/60">
-          built with love by t9nzin
-        </p>
-      </footer>
     </div>
   );
 }
