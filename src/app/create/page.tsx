@@ -3,10 +3,12 @@
 import { Upload, Sparkles, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import Link from "next/link";
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function CreatePage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -18,6 +20,21 @@ export default function CreatePage() {
       reader.readAsDataURL(file);
     }
   };
+
+  const handleGeneratePostcard = () => {
+    setIsLoading(true);
+    // TODO: Add actual API call here
+    // For demo purposes, simulate loading (remove this when implementing real API)
+    setTimeout(() => {
+      setIsLoading(false);
+      // Navigate to result page or show generated postcard
+    }, 3000);
+  };
+
+  // Show loading screen when generating
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="h-full overflow-hidden bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
@@ -100,7 +117,10 @@ export default function CreatePage() {
 
         {/* Generate Button - Centered */}
         <div className="flex justify-center mt-12">
-          <button className="px-12 py-4 bg-black text-white hover:bg-black/70 transition-all duration-300 rounded-full inline-flex items-center justify-center gap-2">
+          <button
+            onClick={handleGeneratePostcard}
+            className="px-12 py-4 bg-black text-white hover:bg-black/70 transition-all duration-300 rounded-full inline-flex items-center justify-center gap-2"
+          >
             <Sparkles className="w-5 h-5" />
             Generate Postcard
           </button>
