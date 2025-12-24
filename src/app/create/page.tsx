@@ -21,14 +21,50 @@ export default function CreatePage() {
     }
   };
 
-  const handleGeneratePostcard = () => {
+  const handleGeneratePostcard = async () => {
+    // Validate that image is uploaded
+    if (!uploadedImage) {
+      alert('Please upload an image first');
+      return;
+    }
+
     setIsLoading(true);
-    // TODO: Add actual API call here
-    // For demo purposes, simulate loading (remove this when implementing real API)
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('/api/postcards/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: uploadedImage, // base64 string
+          prompt: prompt || '', // Optional prompt
+          // TODO: Add these fields when you add recipient form
+          // recipientEmail: recipientEmail,
+          // recipientName: recipientName,
+          // senderName: senderName,
+          // message: message,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Success! Handle the response
+        console.log('Postcard generated successfully:', data);
+        // TODO: Navigate to success page or show confirmation
+        alert('Postcard generated successfully!');
+      } else {
+        // Handle error
+        console.error('Error:', data.error);
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Failed to generate postcard:', error);
+      alert('Failed to generate postcard. Please try again.');
+    } finally {
       setIsLoading(false);
-      // Navigate to result page or show generated postcard
-    }, 3000);
+    }
   };
 
   // Show loading screen when generating
@@ -77,7 +113,7 @@ export default function CreatePage() {
                 />
                 <label
                   htmlFor="image-upload"
-                  className="block w-full aspect-[4/3] rounded-2xl border-2 border-dashed border-black/20 bg-white/50 backdrop-blur-sm hover:border-black/40 transition-colors cursor-pointer overflow-hidden"
+                  className="block w-full aspect-4/3 rounded-2xl border-2 border-dashed border-black/20 bg-white/50 backdrop-blur-sm hover:border-black/40 transition-colors cursor-pointer overflow-hidden"
                 >
                   {uploadedImage ? (
                     <img
@@ -102,7 +138,7 @@ export default function CreatePage() {
             <label className="block text-2xl mb-4 text-black">
               Prompt <span className="text-black/40 text-lg">(optional)</span>
             </label>
-            <div className="relative w-full aspect-[4/3]">
+            <div className="relative w-full aspect-4/3">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
