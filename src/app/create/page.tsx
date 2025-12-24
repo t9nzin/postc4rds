@@ -73,7 +73,7 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="h-full overflow-hidden bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
+    <div className="min-h-full overflow-y-auto bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
       {/* Header */}
       <div className="mb-16">
         <Link href="/">
