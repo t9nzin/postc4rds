@@ -42,7 +42,7 @@ export default function RootLayout({
           {/* Footer */}
           <footer className="text-center py-6 bg-white flex-shrink-0" style={{ fontFamily: "'Instrument Serif', serif" }}>
             <p className="text-base md:text-lg text-black">
-              built with love by t9nzin
+              built with &lt;3 by t9nzin
             </p>
           </footer>
         </div>
