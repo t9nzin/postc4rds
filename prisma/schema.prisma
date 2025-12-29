@@ -11,8 +11,8 @@ model Postcard {
   originalPhotoUrl  String
   generatedImageUrl String?
   aiPrompt          String?
-  message           String
-  recipientEmail    String
+  message           String?
+  recipientEmail    String?
   location          String?
   style             String?
   status            String

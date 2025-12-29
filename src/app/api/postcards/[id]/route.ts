@@ -1,7 +1,4 @@
 import { NextResponse } from "next/server";
-// ^ next.js helper to create http responses in app router
-// NextResponse.json(data, options?) <-- data is required, gets turned into json
-// options? is optional, lets you customize things like HTTP status, headers, etc
 import { prisma } from "@/lib/prisma"; 
 
 
