@@ -27,10 +27,10 @@ export default function App() {
           </div>
 
           {/* Right: Glass morphism postcards - horizontal */}
-          <div className="relative h-[600px] hidden lg:block">
+          <div className="relative h-150 hidden lg:block">
             {/* Postcard 1 - Back left */}
-            <div className="absolute top-32 left-0 w-80 rotate-[-6deg] transition-transform hover:rotate-[-8deg] hover:scale-105 duration-300">
-              <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+            <div className="absolute top-32 left-0 w-80 -rotate-6 transition-transform hover:rotate-[-8deg] hover:scale-105 duration-300">
+              <div className="aspect-4/3 rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
                 <Image
                   src="/postcard1.jpg"
                   alt="Beach sunset"
@@ -41,8 +41,8 @@ export default function App() {
             </div>
 
             {/* Postcard 2 - Center */}
-            <div className="absolute top-60 left-12 w-80 rotate-[3deg] transition-transform hover:rotate-[5deg] hover:scale-105 duration-300 z-10">
-              <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+            <div className="absolute top-60 left-12 w-80 rotate-3 transition-transform hover:rotate-[5deg] hover:scale-105 duration-300 z-10">
+              <div className="aspect-4/3 rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
                 <Image
                   src="/postcard2.jpg"
                   alt="Beach sunset"
@@ -53,8 +53,8 @@ export default function App() {
             </div>
 
             {/* Postcard 3 - Front right */}
-            <div className="absolute top-44 right-0 w-80 rotate-[-3deg] transition-transform hover:rotate-[-5deg] hover:scale-105 duration-300 z-20">
-              <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+            <div className="absolute top-44 right-0 w-80 -rotate-3 transition-transform hover:rotate-[-5deg] hover:scale-105 duration-300 z-20">
+              <div className="aspect-4/3 rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
                 <Image
                   src="/postcard3.jpg"
                   alt="City architecture"
@@ -67,10 +67,10 @@ export default function App() {
         </div>
 
         {/* Mobile: Stack postcards below */}
-        <div className="lg:hidden mt-16 relative h-[350px]">
+        <div className="lg:hidden mt-16 relative h-87.5">
           {/* Postcard 1 */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 rotate-[-6deg]">
-            <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 -rotate-6">
+            <div className="aspect-4/3 rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
               <Image
                 src="/postcard1.jpg"
                 alt="Mountain landscape"
@@ -82,7 +82,7 @@ export default function App() {
 
           {/* Postcard 2 */}
           <div className="absolute top-8 left-1/2 -translate-x-1/2 w-72 rotate-[4deg] z-10">
-            <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+            <div className="aspect-4/3 rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
               <Image
                 src="/postcard2.jpg"
                 alt="Beach sunset"
@@ -93,8 +93,8 @@ export default function App() {
           </div>
 
           {/* Postcard 3 */}
-          <div className="absolute top-16 left-1/2 -translate-x-1/2 w-72 rotate-[-2deg] z-20">
-            <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 w-72 -rotate-2 z-20">
+            <div className="aspect-4/3 rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
               <Image
                 src="/postcard3.jpg"
                 alt="City architecture"

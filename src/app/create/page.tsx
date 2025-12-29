@@ -3,9 +3,11 @@
 import { Upload, Sparkles, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function CreatePage() {
+  const router = useRouter();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -31,29 +33,22 @@ export default function CreatePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/postcards/send', {
+      const response = await fetch('/api/postcards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          image: uploadedImage, // base64 string
-          prompt: prompt || '', // Optional prompt
-          // TODO: Add these fields when you add recipient form
-          // recipientEmail: recipientEmail,
-          // recipientName: recipientName,
-          // senderName: senderName,
-          // message: message,
+          originalPhotoUrl: uploadedImage, // base64 string
+          aiPrompt: prompt || '', // Optional prompt
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Success! Handle the response
-        console.log('Postcard generated successfully:', data);
-        // TODO: Navigate to success page or show confirmation
-        alert('Postcard generated successfully!');
+        // Navigate to result page
+        router.push(`/postcards/${data.id}`);
       } else {
         // Handle error
         console.error('Error:', data.error);

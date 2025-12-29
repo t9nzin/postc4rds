@@ -39,9 +39,10 @@ export async function POST(req: Request) {
             { status: 201 }
         );
     } catch (error) {
+        console.error('Error creating postcard:', error);
         return NextResponse.json(
-            { error: "Failed to create postcard" }, 
+            { error: "Failed to create postcard", details: error instanceof Error ? error.message : 'Unknown error' },
             { status: 500 }
-        ); 
+        );
     }
 }

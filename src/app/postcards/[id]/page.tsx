@@ -3,11 +3,105 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Send, Download } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+
+interface Postcard {
+  id: string;
+  originalPhotoUrl: string;
+  generatedImageUrl: string | null;
+  aiPrompt: string | null;
+  status: string;
+  message: string | null;
+  recipientEmail: string | null;
+}
 
 export default function ResultPage() {
+  const params = useParams();
+  const [postcard, setPostcard] = useState<Postcard | null>(null);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    const fetchPostcard = async () => {
+      try {
+        const response = await fetch(`/api/postcards/${params.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPostcard(data);
+        } else {
+          console.error('Failed to fetch postcard');
+        }
+      } catch (error) {
+        console.error('Error fetching postcard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPostcard();
+  }, [params.id]);
+
+  const handleSendPostcard = async () => {
+    // Validate email
+    if (!email) {
+      alert('Please enter a recipient email');
+      return;
+    }
+
+    setSending(true);
+
+    try {
+      const response = await fetch(`/api/postcards/${params.id}/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          recipientEmail: email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Postcard sent successfully! 💌');
+        // Clear form
+        setMessage('');
+        setEmail('');
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Failed to send postcard:', error);
+      alert('Failed to send postcard. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-full flex items-center justify-center bg-white">
+        <p className="text-xl" style={{ fontFamily: "'Instrument Serif', serif" }}>
+          Loading postcard...
+        </p>
+      </div>
+    );
+  }
+
+  if (!postcard) {
+    return (
+      <div className="min-h-full flex items-center justify-center bg-white">
+        <p className="text-xl" style={{ fontFamily: "'Instrument Serif', serif" }}>
+          Postcard not found
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full overflow-y-auto bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
@@ -36,11 +130,9 @@ export default function ResultPage() {
           {/* Left Column: Postcard and Download */}
           <div className="space-y-6">
             <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
-              {/* Placeholder for generated postcard - will be replaced with actual AI-generated image */}
-              <Image
-                src="/postcard1.jpg"
+              <img
+                src={postcard.generatedImageUrl || postcard.originalPhotoUrl}
                 alt="Generated postcard"
-                fill 
                 className="w-full h-full object-cover"
               />
             </div>
@@ -82,9 +174,13 @@ export default function ResultPage() {
                   className="flex-1 h-14 px-6 rounded-full border border-black/20 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-black/40 transition-colors placeholder:text-black/30"
                   style={{ fontFamily: "'Instrument Serif', serif" }}
                 />
-                <button className="h-14 px-8 bg-black text-white hover:bg-black/70 transition-all duration-300 rounded-full flex items-center justify-center gap-2 whitespace-nowrap">
+                <button
+                  onClick={handleSendPostcard}
+                  disabled={sending}
+                  className="h-14 px-8 bg-black text-white hover:bg-black/70 disabled:bg-black/40 disabled:cursor-not-allowed transition-all duration-300 rounded-full flex items-center justify-center gap-2 whitespace-nowrap"
+                >
                   <Send className="w-5 h-5" />
-                  Send
+                  {sending ? 'Sending...' : 'Send'}
                 </button>
               </div>
             </div>

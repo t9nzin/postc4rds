@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 
 export async function GET(
-    _req: Request, 
-    { params }: { params: { id: string } }
+    _req: Request,
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     const postcard = await prisma.postcard.findUnique({
-        where: { id: params.id },
+        where: { id },
     });
 
     if (!postcard) {
