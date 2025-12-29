@@ -11,7 +11,7 @@ export async function POST(
     try {
         const { id } = await params;
         const body = await req.json();
-        const { message, recipientEmail } = body;
+        const { message, recipientEmail, senderName } = body;
 
         // Validate required fields
         if (!recipientEmail) {
@@ -41,70 +41,40 @@ export async function POST(
             );
         }
 
-        // Get the image (base64 or URL)
-        const imageData = postcard.generatedImageUrl || postcard.originalPhotoUrl;
+        // Get the Cloudinary image URL
+        const imageUrl = postcard.generatedImageUrl || postcard.originalPhotoUrl;
+        const displaySenderName = senderName || "a friend";
 
-        // Convert base64 to buffer for attachment
-        let imageBuffer: Buffer;
-        let imageMimeType = 'image/jpeg';
+        console.log('🖼️ Image URL for email:', imageUrl);
+        console.log('📧 Sending to:', recipientEmail);
 
-        if (imageData.startsWith('data:')) {
-            // It's a base64 data URL
-            const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
-            if (matches) {
-                imageMimeType = matches[1];
-                imageBuffer = Buffer.from(matches[2], 'base64');
-            } else {
-                return NextResponse.json(
-                    { error: "Invalid image format" },
-                    { status: 400 }
-                );
-            }
-        } else {
-            // If it's a URL, we'd need to fetch it, but for now assume base64
-            return NextResponse.json(
-                { error: "URL images not yet supported" },
-                { status: 400 }
-            );
-        }
+        // Build HTML email
+        const emailHtml = `<!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="utf-8">
+            </head>
+            <body style="font-family:Georgia,serif;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);margin:0;padding:40px 20px;min-height:100vh">
+            <div style="max-width:700px;margin:0 auto;background:rgba(255, 255, 255, 0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:20px;border-radius:20px;box-shadow:0 8px 32px 0 rgba(31, 38, 135, 0.37);border:1px solid rgba(255, 255, 255, 0.18)">
+            <div style="background:rgba(255, 255, 255, 0.95);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
+            <div style="background:linear-gradient(135deg, rgba(239, 212, 183, 0.9), rgba(201, 177, 138, 0.9));backdrop-filter:blur(5px);color:#5a4a3a;padding:16px 20px;text-align:center;font-size:14px;font-style:italic;border-bottom:1px solid rgba(201, 177, 138, 0.3)">Sent with love from ${displaySenderName}</div>
+            <img src="${imageUrl}" alt="Your postcard" style="width:100%;display:block;border-bottom:1px solid rgba(201, 177, 138, 0.3)">
+            ${message ? `<div style="padding:24px;font-size:15px;line-height:1.7;color:#333;white-space:pre-wrap;font-family:Georgia,serif;font-style:italic;background:rgba(255,255,255,0.5)">${message}</div>` : ''}
+            <div style="padding:16px;text-align:center;font-size:13px;color:#8b7355;background:rgba(250, 248, 245, 0.8);backdrop-filter:blur(5px)">From The Heart ❤️</div>
+            </div>
+            </div>
+            </body>
+            </html>`;
 
-        // Send email using Resend with attachment
+        // Log a snippet of the HTML to verify img tag
+        console.log('📄 HTML snippet:', emailHtml.substring(emailHtml.indexOf('<img'), emailHtml.indexOf('<img') + 150));
+
+        // Send email using Resend with Cloudinary URL
         const emailData = await resend.emails.send({
             from: "From The Heart <onboarding@resend.dev>",
             to: recipientEmail,
             subject: "You've received a postcard! 💌",
-            html: `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-body{font-family:Georgia,serif;background:#f9f9f9;margin:0;padding:20px}
-.container{max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden}
-.header{background:#000;color:#fff;padding:30px;text-align:center}
-.header h1{margin:0;font-size:28px;font-style:italic}
-.postcard-image{width:100%;display:block}
-.message{padding:30px;font-size:16px;line-height:1.6;color:#333;white-space:pre-wrap}
-.footer{padding:20px;text-align:center;font-size:14px;color:#666;border-top:1px solid #eee}
-</style>
-</head>
-<body>
-<div class="container">
-<div class="header"><h1>You've received a postcard</h1></div>
-<img src="cid:postcard-image" alt="Your postcard" class="postcard-image">
-${message ? `<div class="message">${message}</div>` : ''}
-<div class="footer"><p>Sent with ❤️ from <strong>From The Heart</strong></p></div>
-</div>
-</body>
-</html>
-            `,
-            attachments: [
-                {
-                    filename: 'postcard.jpg',
-                    content: imageBuffer,
-                    contentId: 'postcard-image',
-                },
-            ],
+            html: emailHtml,
         });
 
         // Update postcard in database

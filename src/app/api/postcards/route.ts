@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; 
+import { prisma } from "@/lib/prisma";
+import { v2 as cloudinary } from 'cloudinary';
 
+// Configure Cloudinary
+cloudinary.config({
+    cloudinary_url: process.env.CLOUDINARY_URL
+});
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json(); 
+        const body = await req.json();
 
         const {
             originalPhotoUrl,
@@ -13,7 +18,7 @@ export async function POST(req: Request) {
             recipientEmail,
             location,
             style,
-        } = body; 
+        } = body;
 
         if (!originalPhotoUrl) {
             return NextResponse.json(
@@ -22,12 +27,28 @@ export async function POST(req: Request) {
             );
         }
 
+        // Upload image to Cloudinary
+        let cloudinaryUrl: string;
+        try {
+            const uploadResult = await cloudinary.uploader.upload(originalPhotoUrl, {
+                folder: 'postcards',
+                resource_type: 'image',
+            });
+            cloudinaryUrl = uploadResult.secure_url;
+        } catch (uploadError) {
+            console.error('Cloudinary upload error:', uploadError);
+            return NextResponse.json(
+                { error: "Failed to upload image", details: uploadError instanceof Error ? uploadError.message : 'Unknown error' },
+                { status: 500 }
+            );
+        }
+
         const postcard = await prisma.postcard.create({
             data: {
-                originalPhotoUrl,
+                originalPhotoUrl: cloudinaryUrl,
                 aiPrompt,
                 message,
-                recipientEmail, 
+                recipientEmail,
                 location,
                 style,
                 status: "pending",
