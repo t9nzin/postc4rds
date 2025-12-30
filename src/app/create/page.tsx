@@ -33,7 +33,8 @@ export default function CreatePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/postcards', {
+      // Step 1: Create postcard (uploads image to Cloudinary)
+      const createResponse = await fetch('/api/postcards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,16 +45,38 @@ export default function CreatePage() {
         }),
       });
 
-      const data = await response.json();
+      const createData = await createResponse.json();
 
-      if (response.ok) {
-        // Navigate to result page
-        router.push(`/postcards/${data.id}`);
-      } else {
-        // Handle error
-        console.error('Error:', data.error);
-        alert(`Error: ${data.error}`);
+      if (!createResponse.ok) {
+        console.error('Error creating postcard:', createData.error);
+        alert(`Error: ${createData.error}`);
+        return;
       }
+
+      const postcardId = createData.id;
+      console.log('✅ Postcard created:', postcardId);
+
+      // Step 2: Generate AI transformation
+      console.log('🎨 Starting AI generation...');
+      const generateResponse = await fetch(`/api/postcards/${postcardId}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const generateData = await generateResponse.json();
+
+      if (!generateResponse.ok) {
+        console.error('Error generating postcard:', generateData.error);
+        alert(`Error generating: ${generateData.error}`);
+        return;
+      }
+
+      console.log('✅ Generation complete!');
+
+      // Step 3: Navigate to result page
+      router.push(`/postcards/${postcardId}`);
     } catch (error) {
       console.error('Failed to generate postcard:', error);
       alert('Failed to generate postcard. Please try again.');
