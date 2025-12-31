@@ -84,12 +84,15 @@ export async function POST(
         console.log('👁️ Analyzing photo with Gemini Vision...');
 
         // Use Gemini Vision to analyze the photo
-        const visionPrompt = `Analyze this photo and describe:
-1. Main subject/location (e.g., "Eiffel Tower in Paris", "Grand Canyon", "Beach sunset")
-2. Key themes and atmosphere (e.g., "romantic, European travel", "adventure, natural wonder")
-3. Notable elements or landmarks
+        const visionPrompt = `Analyze this photo and identify the location/destination for a vintage travel postcard:
 
-Be concise (2-3 sentences max). Focus on what would make a great vintage postcard theme.`;
+1. What location or destination is shown? (e.g., "Paris, France", "Beach resort", "Mountain town")
+2. What's the general vibe/activity type? (e.g., "romantic city exploration", "beach relaxation", "outdoor adventure")
+
+Respond briefly with the location and vibe. This will be used to generate a DIFFERENT scene at the same location.
+
+Format: "[Location] - [vibe/activity type]"
+Example: "Paris, France - romantic city life" or "Tropical beach - leisure and relaxation"`;
 
         const visionResult = await generativeVisionModel.generateContent({
             contents: [{
@@ -108,12 +111,16 @@ Be concise (2-3 sentences max). Focus on what would make a great vintage postcar
             }]
         });
 
-        const photoDescription = visionResult.response.candidates?.[0]?.content?.parts?.[0]?.text || "scenic travel destination";
-        console.log('✅ Photo analysis:', photoDescription);
+        const locationTheme = visionResult.response.candidates?.[0]?.content?.parts?.[0]?.text || "scenic travel destination";
+        console.log('✅ Location theme extracted:', locationTheme);
 
-        // Build themed postcard prompt
+        // Build diverse postcard prompt - same location, DIFFERENT scene
         const userStyle = postcard.aiPrompt || "";
-        const fullPrompt = `A vintage 1940s linen travel postcard featuring: ${photoDescription}. ${userStyle}. Style: Curt Teich chromolithograph print, textured linen paper, vibrant but slightly faded colors, artistic painted quality, no text or words.`;
+        const fullPrompt = `A vintage 1940s linen travel postcard depicting ${locationTheme}. ${userStyle}.
+
+Create a DIFFERENT scene than a typical tourist photo - show a unique perspective, different activity, or varied composition of this location. Can include people engaging in activities, but make it artistic and varied.
+
+Style: Curt Teich chromolithograph print with painted artistic quality, vibrant but slightly faded colors, textured linen paper finish. Capture the essence and atmosphere of the destination in a fresh, creative way.`;
 
         console.log('🎨 Generating themed postcard with Imagen 3 Fast');
         console.log('💬 Final prompt:', fullPrompt);
