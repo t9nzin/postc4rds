@@ -115,12 +115,25 @@ Example: "Paris, France - romantic city life" or "Tropical beach - leisure and r
         console.log('✅ Location theme extracted:', locationTheme);
 
         // Build diverse postcard prompt - same location, DIFFERENT scene
-        const userStyle = postcard.aiPrompt || "";
-        const fullPrompt = `A vintage 1940s linen travel postcard depicting ${locationTheme}. ${userStyle}.
+        const userCustomization = postcard.aiPrompt || "";
+
+        // Make user's custom request the PRIMARY instruction if provided
+        let fullPrompt;
+        if (userCustomization) {
+            // User's request comes FIRST as the main subject
+            fullPrompt = `${userCustomization}, in the style of a vintage 1940s Curt Teich linen travel postcard of ${locationTheme}.
+
+IMPORTANT: Fulfill the specific user request above. The location "${locationTheme}" is just context - prioritize the user's creative direction.
+
+Style: Chromolithograph print with artistic painted quality, vibrant but slightly faded colors, textured linen paper finish.`;
+        } else {
+            // Default: varied scene of the location
+            fullPrompt = `A vintage 1940s linen travel postcard depicting ${locationTheme}.
 
 Create a DIFFERENT scene than a typical tourist photo - show a unique perspective, different activity, or varied composition of this location. Can include people engaging in activities, but make it artistic and varied.
 
 Style: Curt Teich chromolithograph print with painted artistic quality, vibrant but slightly faded colors, textured linen paper finish. Capture the essence and atmosphere of the destination in a fresh, creative way.`;
+        }
 
         console.log('🎨 Generating themed postcard with Imagen 3 Fast');
         console.log('💬 Final prompt:', fullPrompt);
