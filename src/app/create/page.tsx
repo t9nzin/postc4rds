@@ -55,10 +55,10 @@ export default function CreatePage() {
       }
 
       const postcardId = createData.id;
-      console.log('✅ Postcard created:', postcardId);
+      console.log('Postcard created:', postcardId);
 
       // Step 2: Generate AI transformation
-      console.log('🎨 Starting AI generation...');
+      console.log('Starting AI generation...');
       const generateResponse = await fetch(`/api/postcards/${postcardId}/generate`, {
         method: 'POST',
         headers: {
@@ -74,7 +74,7 @@ export default function CreatePage() {
         return;
       }
 
-      console.log('✅ Generation complete!');
+      console.log('Generation complete!');
 
       // Step 3: Navigate to result page
       router.push(`/postcards/${postcardId}`);

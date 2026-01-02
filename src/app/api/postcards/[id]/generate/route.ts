@@ -81,7 +81,7 @@ export async function POST(
         // Get the user's uploaded photo as base64
         const userImageBase64 = await getBase64FromUrl(postcard.originalPhotoUrl);
 
-        console.log('👁️ Analyzing photo with Gemini Vision...');
+        console.log('Analyzing photo with Gemini Vision...');
 
         // Use Gemini Vision to analyze the photo
         const visionPrompt = `Analyze this photo and identify the location/destination for a vintage travel postcard:
@@ -112,7 +112,7 @@ Example: "Paris, France - romantic city life" or "Tropical beach - leisure and r
         });
 
         const locationTheme = visionResult.response.candidates?.[0]?.content?.parts?.[0]?.text || "scenic travel destination";
-        console.log('✅ Location theme extracted:', locationTheme);
+        console.log('Location theme extracted:', locationTheme);
 
         // Build diverse postcard prompt - same location, DIFFERENT scene
         const userCustomization = postcard.aiPrompt || "";
@@ -135,8 +135,8 @@ Create a DIFFERENT scene than a typical tourist photo - show a unique perspectiv
 Style: Curt Teich chromolithograph print with painted artistic quality, vibrant but slightly faded colors, textured linen paper finish. Capture the essence and atmosphere of the destination in a fresh, creative way.`;
         }
 
-        console.log('🎨 Generating themed postcard with Imagen 3 Fast');
-        console.log('💬 Final prompt:', fullPrompt);
+        console.log('Generating themed postcard with Imagen 3 Fast');
+        console.log('Final prompt:', fullPrompt);
 
         const endpoint = `projects/${project}/locations/${location}/publishers/${publisher}/models/${model}`;
 
@@ -163,7 +163,7 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
             parameters,
         };
 
-        console.log('🚀 Calling Vertex AI Imagen with style reference...');
+        console.log('Calling Vertex AI Imagen with style reference...');
 
         const [response] = await predictionClient.predict(request) as any;
 
@@ -178,17 +178,17 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
             throw new Error('No image data in prediction response');
         }
 
-        console.log('✅ Vintage postcard generated successfully');
+        console.log('Vintage postcard generated successfully');
 
         const base64Image = `data:image/png;base64,${imageData}`;
 
-        console.log('☁️ Uploading to Cloudinary...');
+        console.log('Uploading to Cloudinary...');
         const uploadResult = await cloudinary.uploader.upload(base64Image, {
             folder: 'postcards/generated',
             resource_type: 'image',
         });
 
-        console.log('✅ Uploaded to Cloudinary:', uploadResult.secure_url);
+        console.log('Uploaded to Cloudinary:', uploadResult.secure_url);
 
         const updatedPostcard = await prisma.postcard.update({
             where: { id },
@@ -208,7 +208,7 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
         );
 
     } catch (error) {
-        console.error("❌ Error generating postcard:", error);
+        console.error("Error generating postcard:", error);
         return NextResponse.json(
             {
                 error: "Failed to generate postcard",

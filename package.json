@@ -14,7 +14,7 @@
   "dependencies": {
     "@google-cloud/aiplatform": "^6.0.0",
     "@google-cloud/vertexai": "^1.10.0",
-    "@napi-rs/canvas": "^0.1.88",
+    "sharp": "^0.33.0",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "cloudinary": "^2.8.0",

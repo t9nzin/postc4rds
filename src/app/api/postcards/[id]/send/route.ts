@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
+import sharp from 'sharp';
+import { v2 as cloudinary } from 'cloudinary';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+cloudinary.config({
+    cloudinary_url: process.env.CLOUDINARY_URL
+});
 
 export async function POST(
     req: Request,
@@ -41,39 +47,90 @@ export async function POST(
             );
         }
 
-        // Get the Cloudinary image URL
-        const imageUrl = postcard.generatedImageUrl || postcard.originalPhotoUrl;
+        // Get the generated image URL
+        const generatedImageUrl = postcard.generatedImageUrl || postcard.originalPhotoUrl;
         const displaySenderName = senderName || "a friend";
 
-        console.log('🖼️ Image URL for email:', imageUrl);
-        console.log('📧 Sending to:', recipientEmail);
+        console.log('Generated image URL:', generatedImageUrl);
+        console.log('Sending to:', recipientEmail);
 
-        // Build HTML email
+        // Template URL and dimensions
+        const TEMPLATE_URL = 'https://res.cloudinary.com/dvn8fwibn/image/upload/v1767371879/template_kmhcrt.png';
+
+        // ADJUST THESE VALUES: Position and size for the generated image
+        const GEN_IMAGE_X = 0;        // X position (left edge)
+        const GEN_IMAGE_Y = 0;       // Y position (top edge)
+        const GEN_IMAGE_WIDTH = 567;   // Width
+        const GEN_IMAGE_HEIGHT = 397;  // Height
+
+        // Load and fetch images
+        console.log('Loading template and generated image...');
+        const [templateResponse, generatedResponse] = await Promise.all([
+            fetch(TEMPLATE_URL),
+            fetch(generatedImageUrl)
+        ]);
+
+        const [templateBuffer, generatedBuffer] = await Promise.all([
+            templateResponse.arrayBuffer(),
+            generatedResponse.arrayBuffer()
+        ]);
+
+        // Resize generated image to desired dimensions
+        const resizedGeneratedImage = await sharp(Buffer.from(generatedBuffer))
+            .resize(GEN_IMAGE_WIDTH, GEN_IMAGE_HEIGHT, { fit: 'cover' })
+            .toBuffer();
+
+        // Composite generated image onto template
+        console.log('Compositing images...');
+        let compositeBuffer = await sharp(Buffer.from(templateBuffer))
+            .composite([{
+                input: resizedGeneratedImage,
+                left: GEN_IMAGE_X,
+                top: GEN_IMAGE_Y
+            }])
+            .toBuffer();
+
+        // Note: Sharp doesn't support custom font text overlay easily
+        // For text with custom fonts, you'd need to:
+        // 1. Generate text as SVG with the font
+        // 2. Convert SVG to image buffer
+        // 3. Composite it onto the image
+        // Or use canvas in a separate service
+        // For now, text overlay is commented out - you can add it later
+
+        const base64Image = `data:image/png;base64,${compositeBuffer.toString('base64')}`;
+
+        // Upload composite to Cloudinary
+        console.log('Uploading composite postcard to Cloudinary...');
+        const uploadResult = await cloudinary.uploader.upload(base64Image, {
+            folder: 'postcards/composed',
+            resource_type: 'image',
+        });
+
+        console.log('Composite uploaded:', uploadResult.secure_url);
+        const compositeImageUrl = uploadResult.secure_url;
+
+        // Build simple HTML email with composite image
         const emailHtml = `<!DOCTYPE html>
             <html>
             <head>
             <meta charset="utf-8">
             </head>
-            <body style="font-family:Georgia,serif;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);margin:0;padding:40px 20px;min-height:100vh">
-            <div style="max-width:700px;margin:0 auto;background:rgba(255, 255, 255, 0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:20px;border-radius:20px;box-shadow:0 8px 32px 0 rgba(31, 38, 135, 0.37);border:1px solid rgba(255, 255, 255, 0.18)">
-            <div style="background:rgba(255, 255, 255, 0.95);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1)">
-            <div style="background:linear-gradient(135deg, rgba(239, 212, 183, 0.9), rgba(201, 177, 138, 0.9));backdrop-filter:blur(5px);color:#5a4a3a;padding:16px 20px;text-align:center;font-size:14px;font-style:italic;border-bottom:1px solid rgba(201, 177, 138, 0.3)">Sent with love from ${displaySenderName}</div>
-            <img src="${imageUrl}" alt="Your postcard" style="width:100%;display:block;border-bottom:1px solid rgba(201, 177, 138, 0.3)">
-            ${message ? `<div style="padding:24px;font-size:15px;line-height:1.7;color:#333;white-space:pre-wrap;font-family:Georgia,serif;font-style:italic;background:rgba(255,255,255,0.5)">${message}</div>` : ''}
-            <div style="padding:16px;text-align:center;font-size:13px;color:#8b7355;background:rgba(250, 248, 245, 0.8);backdrop-filter:blur(5px)">From The Heart ❤️</div>
-            </div>
+            <body style="font-family:Georgia,serif;background:#f5f5f5;margin:0;padding:40px 20px;">
+            <div style="max-width:600px;margin:0 auto;background:white;padding:20px;border-radius:8px;">
+            <p style="text-align:center;color:#666;margin-bottom:20px;">sent with <3 from ${displaySenderName}</p>
+            <img src="${compositeImageUrl}" alt="Your postcard" style="width:100%;display:block;border-radius:4px;">
+            <p style="text-align:center;margin-top:20px;font-size:14px;"><a href="https://postc4rds.xyz" style="color:#666;text-decoration:none;">postc4rds.xyz</a></p>
             </div>
             </body>
             </html>`;
 
-        // Log a snippet of the HTML to verify img tag
-        console.log('📄 HTML snippet:', emailHtml.substring(emailHtml.indexOf('<img'), emailHtml.indexOf('<img') + 150));
-
-        // Send email using Resend with Cloudinary URL
+        // Send email using Resend
+        console.log('Sending email...');
         const emailData = await resend.emails.send({
-            from: "From The Heart <onboarding@resend.dev>",
+            from: "postc4rds.xyz <onboarding@resend.dev>",
             to: recipientEmail,
-            subject: "You've received a postcard! 💌",
+            subject: "You've received a postcard!",
             html: emailHtml,
         });
 
