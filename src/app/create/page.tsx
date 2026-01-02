@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/components/LoadingScreen';
+import { toast, Toaster } from 'sonner';
 
 export default function CreatePage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function CreatePage() {
   const handleGeneratePostcard = async () => {
     // Validate that image is uploaded
     if (!uploadedImage) {
-      alert('Please upload an image first');
+      toast('Please upload an image first');
       return;
     }
 
@@ -49,7 +50,7 @@ export default function CreatePage() {
 
       if (!createResponse.ok) {
         console.error('Error creating postcard:', createData.error);
-        alert(`Error: ${createData.error}`);
+        toast.error(`Error: ${createData.error}`);
         return;
       }
 
@@ -69,7 +70,7 @@ export default function CreatePage() {
 
       if (!generateResponse.ok) {
         console.error('Error generating postcard:', generateData.error);
-        alert(`Error generating: ${generateData.error}`);
+        toast.error(`Error generating: ${generateData.error}`);
         return;
       }
 
@@ -79,7 +80,7 @@ export default function CreatePage() {
       router.push(`/postcards/${postcardId}`);
     } catch (error) {
       console.error('Failed to generate postcard:', error);
-      alert('Failed to generate postcard. Please try again.');
+      toast.error('Failed to generate postcard. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +92,8 @@ export default function CreatePage() {
   }
 
   return (
+    <>
+    <Toaster position="top-center" richColors />
     <div className="min-h-full overflow-y-auto bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
       {/* Header */}
       <div className="mb-16">
@@ -181,5 +184,6 @@ export default function CreatePage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

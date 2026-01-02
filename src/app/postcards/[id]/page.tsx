@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Send, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { toast, Toaster } from 'sonner';
 
 interface Postcard {
   id: string;
@@ -47,7 +48,7 @@ export default function ResultPage() {
   const handleSendPostcard = async () => {
     // Validate email
     if (!email) {
-      alert('Please enter a recipient email');
+      toast('Please enter a recipient email');
       return;
     }
 
@@ -68,16 +69,16 @@ export default function ResultPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Postcard sent successfully! 💌');
+        toast.success('Postcard sent successfully!');
         // Clear form
         setMessage('');
         setEmail('');
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error(`Error: ${data.error}`);
       }
     } catch (error) {
       console.error('Failed to send postcard:', error);
-      alert('Failed to send postcard. Please try again.');
+      toast.error('Failed to send postcard. Please try again.');
     } finally {
       setSending(false);
     }
@@ -104,6 +105,8 @@ export default function ResultPage() {
   }
 
   return (
+    <>
+    <Toaster position="top-center" richColors />
     <div className="min-h-full overflow-y-auto bg-white px-8 md:px-16 py-12 flex flex-col" style={{ fontFamily: "'Instrument Serif', serif" }}>
       {/* Header */}
       <div className="mb-16">
@@ -188,5 +191,6 @@ export default function ResultPage() {
         </div>
       </div>
     </div>
+  </>
   );
 }
