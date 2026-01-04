@@ -35,17 +35,10 @@ const publisher = 'google';
 const model = 'imagen-3.0-fast-generate-001'; 
 
 const generatePostcardPrompt = (userDescription: string) => {
-    return `${userDescription}. Exact style: vintage 1940s Curt Teich linen travel postcard, chromolithograph print, textured paper, faded colors`;
+    return `${userDescription}. Exact style: vintage 1940s Curt Teich linen travel postcard, chromolithograph print, textured paper, faded colors, do not add borders to the postcard`;
 };
 
 const negativePrompt = `modern, digital painting, vector art, contemporary, photorealistic, sharp details, HD, anime, cartoon, people, faces, text, watermark`;
-
-// Upload your reference postcard images to Cloudinary and use their URLs
-const REFERENCE_POSTCARD_URLS = [
-    'https://res.cloudinary.com/dvn8fwibn/image/upload/v1767068072/postcard2_hjnxzf.jpg',
-    'https://res.cloudinary.com/dvn8fwibn/image/upload/v1767068072/postcard3_hsy8ee.jpg',
-    'https://res.cloudinary.com/dvn8fwibn/image/upload/v1767068073/postcard1_ke0cfc.jpg'
-];
 
 async function getBase64FromUrl(url: string): Promise<string> {
     const response = await fetch(url);

@@ -11,7 +11,7 @@ export default function App() {
           {/* Left: Heading */}
           <div>
             <p className="text-xl text-black md:text-2xl mb-8">
-              from the <em>heart</em>
+              postc4rds from the <em>heart</em>
             </p>
             
             <h1 className="text-6xl text-black md:text-8xl leading-[0.95] tracking-tight">
