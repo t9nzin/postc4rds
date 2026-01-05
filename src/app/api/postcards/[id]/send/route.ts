@@ -16,7 +16,7 @@ export async function POST(
     try {
         const { id } = await params;
         const body = await req.json();
-        const { message, recipientEmail, senderName } = body;
+        const { message, recipientEmail } = body;
 
         if (!recipientEmail) {
             return NextResponse.json(
@@ -44,7 +44,6 @@ export async function POST(
         }
 
         const generatedImageUrl = postcard.generatedImageUrl || postcard.originalPhotoUrl;
-        const displaySenderName = senderName || "a friend";
 
         console.log('Generated image URL:', generatedImageUrl);
         console.log('Sending to:', recipientEmail);
@@ -97,15 +96,20 @@ export async function POST(
             }
         ];
 
-        if (message && message.trim()) {
+        if (message) {
+            // TODO: sanitize problematic characters from messages (also emojis)
+            const cleanMessage = message
+                .trim()
+                .replace(/,/g, '%2C');  // pre-encode commas
+            
             transformations.push({
-                overlay: `text:fonts:Autography.otf_48:${encodeURIComponent(message.substring(0, 200))}`,
-                width: 600,
+                overlay: `text:fonts:Autography.otf_48:${encodeURIComponent(cleanMessage)}`,
+                width: 550,
                 crop: 'fit',
                 gravity: 'north_west',
-                x: 600,
-                y: 1000,
-                color: 'rgb:333333'  // Note: use 'rgb:' prefix for color
+                x: 1000,
+                y: 1600,
+                color: 'rgb:333333'
             });
         }
 
@@ -115,16 +119,17 @@ export async function POST(
         });
 
         console.log('Composite image URL:', compositeImageUrl);
+        console.log('URL length:', compositeImageUrl.length);
 
         const emailHtml = `<!DOCTYPE html>
         <html>
         <head>
         <meta charset="utf-8">
         </head>
-        <body style="font-family:Georgia,serif;background:#f5f5f5;margin:0;padding:40px 20px;">
+        <body style="font-family:Georgia,serif;background:#ffffff;margin:0;padding:40px 20px;">
         <div style="max-width:600px;margin:0 auto;background:white;padding:20px;border-radius:8px;">
             <p style="text-align:center;color:#666;margin-bottom:20px;font-size:14px;">
-            sent with <3 from ${displaySenderName}
+            sent with <3 from a friend
             </p>
             <img src="${compositeImageUrl}" alt="Your postcard" style="width:100%;display:block;border-radius:4px;">
             <p style="text-align:center;margin-top:20px;font-size:14px;">
