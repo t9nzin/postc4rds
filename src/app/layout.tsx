@@ -20,7 +20,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "from the heart",
+  title: "postc4rds",
   description: "Send friends bespoke, beautiful postcards",
 };
 
