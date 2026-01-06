@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { v2 as cloudinary } from 'cloudinary';
+import sharp from 'sharp';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 cloudinary.config({
     cloudinary_url: process.env.CLOUDINARY_URL
 });
+
+// Helper to download image as buffer
+async function downloadImage(url: string): Promise<Buffer> {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to download image: ${response.statusText}`);
+    }
+    return Buffer.from(await response.arrayBuffer());
+}
 
 export async function POST(
     req: Request,
@@ -48,78 +58,124 @@ export async function POST(
         console.log('Generated image URL:', generatedImageUrl);
         console.log('Sending to:', recipientEmail);
 
-        let generatedPublicId;
-        
-        if (generatedImageUrl.includes('res.cloudinary.com')) {
-            // Extract public_id from Cloudinary URL
-            // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
-            const urlParts = generatedImageUrl.split('/upload/');
-            if (urlParts.length > 1) {
-                const pathParts = urlParts[1].split('/');
-                // Remove version if present (starts with 'v')
-                const startIndex = pathParts[0].startsWith('v') ? 1 : 0;
-                const publicIdWithExt = pathParts.slice(startIndex).join('/');
-                // Remove file extension
-                generatedPublicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
-            }
-        }
-        
-        if (!generatedPublicId) {
-            console.log('Uploading generated image to Cloudinary...');
-            const uploadResult = await cloudinary.uploader.upload(generatedImageUrl, {
-                folder: 'postcards/generated'
-            });
-            generatedPublicId = uploadResult.public_id;
-        }
-
-        console.log('Generated image public_id:', generatedPublicId);
-
         const baseTemplatePublicId = 'base_template_pmmfwq';
+        const baseTemplateUrl = cloudinary.url(baseTemplatePublicId, { 
+            secure: true,
+            format: 'jpg'
+        });
 
         const GEN_IMAGE_WIDTH = 1420;
         const GEN_IMAGE_HEIGHT = 958;
         const GEN_IMAGE_X = 210;
         const GEN_IMAGE_Y = 110;
 
-        // Build composite URL using Cloudinary transformations
-        const transformations: any[] = [
+        const ORIGINAL_IMAGE_WIDTH = 400;
+        const ORIGINAL_IMAGE_HEIGHT = 400;
+        const ORIGINAL_IMAGE_X = 100;
+        const ORIGINAL_IMAGE_Y = 1200;
+
+        // Download all images in parallel
+        console.log('Downloading images...');
+        const downloadPromises = [
+            downloadImage(baseTemplateUrl),
+            downloadImage(generatedImageUrl)
+        ];
+
+        if (postcard.originalPhotoUrl) {
+            downloadPromises.push(downloadImage(postcard.originalPhotoUrl));
+        }
+
+        const [baseTemplate, generatedImage, originalPhoto] = await Promise.all(downloadPromises);
+
+        // Resize images to exact dimensions
+        console.log('Resizing images...');
+        const resizedGenerated = await sharp(generatedImage)
+            .resize(GEN_IMAGE_WIDTH, GEN_IMAGE_HEIGHT, { fit: 'cover' })
+            .toBuffer();
+
+        const resizedOriginal = originalPhoto 
+            ? await sharp(originalPhoto)
+                .resize(ORIGINAL_IMAGE_WIDTH, ORIGINAL_IMAGE_HEIGHT, { fit: 'cover' })
+                .toBuffer()
+            : null;
+
+        // Build composite operations
+        const compositeOperations: any[] = [
             {
-                // Overlay the generated image
-                overlay: generatedPublicId.replace(/\//g, ':'),
-                width: GEN_IMAGE_WIDTH,
-                height: GEN_IMAGE_HEIGHT,
-                crop: 'fill',
-                gravity: 'north_west',
-                x: GEN_IMAGE_X,
-                y: GEN_IMAGE_Y,
-                flags: 'layer_apply'
+                input: resizedGenerated,
+                top: GEN_IMAGE_Y,
+                left: GEN_IMAGE_X
             }
         ];
 
-        if (message) {
-            // TODO: sanitize problematic characters from messages (also emojis)
-            const cleanMessage = message
-                .trim()
-                .replace(/,/g, '%2C');  // pre-encode commas
-            
-            transformations.push({
-                overlay: `text:fonts:Autography.otf_48:${encodeURIComponent(cleanMessage)}`,
-                width: 550,
-                crop: 'fit',
-                gravity: 'north_west',
-                x: 1000,
-                y: 1600,
-                color: 'rgb:333333'
+        if (resizedOriginal) {
+            compositeOperations.push({
+                input: resizedOriginal,
+                top: ORIGINAL_IMAGE_Y,
+                left: ORIGINAL_IMAGE_X
             });
         }
 
-        const compositeImageUrl = cloudinary.url(baseTemplatePublicId, {
-            transformation: transformations,
-            secure: true
-        });
+        // Add text overlay if message exists
+        if (message) {
+            const cleanMessage = message
+                .trim()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
 
-        console.log('Composite image URL:', compositeImageUrl);
-        console.log('URL length:', compositeImageUrl.length);
+            // Create text as SVG
+            const textSvg = `
+                <svg width="550" height="300">
+                    <style>
+                        @font-face {
+                            font-family: 'Autography';
+                            src: url('https://fonts.cdnfonts.com/s/16917/Autography.woff') format('woff');
+                        }
+                        text {
+                            font-family: 'Autography', cursive;
+                            font-size: 48px;
+                            fill: #333333;
+                        }
+                    </style>
+                    <text x="0" y="48" textLength="550" lengthAdjust="spacingAndGlyphs">
+                        ${cleanMessage}
+                    </text>
+                </svg>
+            `;
+
+            const textBuffer = await sharp(Buffer.from(textSvg))
+                .png()
+                .toBuffer();
+
+            compositeOperations.push({
+                input: textBuffer,
+                top: 1600,
+                left: 1000
+            });
+        }
+
+        // Compose everything together
+        console.log('Composing final image...');
+        const compositeBuffer = await sharp(baseTemplate)
+            .composite(compositeOperations)
+            .jpeg({ quality: 90 })
+            .toBuffer();
+
+        // Upload final composite to Cloudinary
+        console.log('Uploading final composite to Cloudinary...');
+        const uploadResult = await cloudinary.uploader.upload(
+            `data:image/jpeg;base64,${compositeBuffer.toString('base64')}`,
+            {
+                folder: 'postcards/final',
+                public_id: `postcard_${id}_${Date.now()}`
+            }
+        );
+
+        const compositeImageUrl = uploadResult.secure_url;
+        console.log('Final composite URL:', compositeImageUrl);
 
         const emailHtml = `<!DOCTYPE html>
         <html>

@@ -40,7 +40,7 @@ export default function RootLayout({
           </div>
 
           {/* Footer */}
-          <footer className="text-center py-6 bg-white flex-shrink-0" style={{ fontFamily: "'Instrument Serif', serif" }}>
+          <footer className="text-center py-6 bg-white shrink-0" style={{ fontFamily: "'Instrument Serif', serif" }}>
             <p className="text-base md:text-lg text-black">
               built with &lt;3 by t9nzin
             </p>
