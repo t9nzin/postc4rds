@@ -69,11 +69,6 @@ export async function POST(
         const GEN_IMAGE_X = 210;
         const GEN_IMAGE_Y = 110;
 
-        const ORIGINAL_IMAGE_WIDTH = 400;
-        const ORIGINAL_IMAGE_HEIGHT = 400;
-        const ORIGINAL_IMAGE_X = 100;
-        const ORIGINAL_IMAGE_Y = 1200;
-
         // Download all images in parallel
         console.log('Downloading images...');
         const downloadPromises = [
@@ -93,11 +88,43 @@ export async function POST(
             .resize(GEN_IMAGE_WIDTH, GEN_IMAGE_HEIGHT, { fit: 'cover' })
             .toBuffer();
 
-        const resizedOriginal = originalPhoto 
-            ? await sharp(originalPhoto)
+        // Calculate aspect ratio-based dimensions for original photo
+        let resizedOriginal = null;
+        let ORIGINAL_IMAGE_WIDTH, ORIGINAL_IMAGE_HEIGHT, ORIGINAL_IMAGE_X, ORIGINAL_IMAGE_Y;
+
+        if (originalPhoto) {
+            const metadata = await sharp(originalPhoto).metadata();
+            const aspectRatio = metadata.width! / metadata.height!;
+
+            console.log('Original photo dimensions:', metadata.width, 'x', metadata.height, '- Aspect ratio:', aspectRatio.toFixed(2));
+
+            if (aspectRatio > 1.1) {
+                // Landscape
+                ORIGINAL_IMAGE_WIDTH = 625;
+                ORIGINAL_IMAGE_HEIGHT = 422;
+                ORIGINAL_IMAGE_X = 250;
+                ORIGINAL_IMAGE_Y = 1500;
+                console.log('Detected: Landscape');
+            } else if (aspectRatio < 0.9) {
+                // Portrait
+                ORIGINAL_IMAGE_WIDTH = 614;
+                ORIGINAL_IMAGE_HEIGHT = 819;
+                ORIGINAL_IMAGE_X = 100;
+                ORIGINAL_IMAGE_Y = 1500;
+                console.log('Detected: Portrait');
+            } else {
+                // Square
+                ORIGINAL_IMAGE_WIDTH = 578;
+                ORIGINAL_IMAGE_HEIGHT = 578;
+                ORIGINAL_IMAGE_X = 100;
+                ORIGINAL_IMAGE_Y = 1300;
+                console.log('Detected: Square');
+            }
+
+            resizedOriginal = await sharp(originalPhoto)
                 .resize(ORIGINAL_IMAGE_WIDTH, ORIGINAL_IMAGE_HEIGHT, { fit: 'cover' })
-                .toBuffer()
-            : null;
+                .toBuffer();
+        }
 
         // Build composite operations
         const compositeOperations: any[] = [
@@ -126,9 +153,44 @@ export async function POST(
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&apos;');
 
+            // Wrap text to 25 characters per line
+            const wrapText = (text: string, maxCharsPerLine: number): string[] => {
+                const words = text.split(' ');
+                const lines: string[] = [];
+                let currentLine = '';
+
+                for (const word of words) {
+                    const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+                    if (testLine.length <= maxCharsPerLine) {
+                        currentLine = testLine;
+                    } else {
+                        if (currentLine) {
+                            lines.push(currentLine);
+                        }
+                        currentLine = word;
+                    }
+                }
+
+                if (currentLine) {
+                    lines.push(currentLine);
+                }
+
+                return lines;
+            };
+
+            const wrappedLines = wrapText(cleanMessage, 30);
+            const lineHeight = 70;
+            const svgHeight = Math.max(300, wrappedLines.length * lineHeight + 50);
+
+            // Create text lines for SVG with left padding
+            const textLines = wrappedLines
+                .map((line, index) => `<text x="10" y="${60 + index * lineHeight}">${line}</text>`)
+                .join('\n                    ');
+
             // Create text as SVG
             const textSvg = `
-                <svg width="550" height="300">
+                <svg width="600" height="${svgHeight}">
                     <style>
                         @font-face {
                             font-family: 'Autography';
@@ -136,13 +198,11 @@ export async function POST(
                         }
                         text {
                             font-family: 'Autography', cursive;
-                            font-size: 48px;
+                            font-size: 60px;
                             fill: #333333;
                         }
                     </style>
-                    <text x="0" y="48" textLength="550" lengthAdjust="spacingAndGlyphs">
-                        ${cleanMessage}
-                    </text>
+                    ${textLines}
                 </svg>
             `;
 
