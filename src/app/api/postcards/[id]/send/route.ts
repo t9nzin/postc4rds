@@ -107,17 +107,17 @@ export async function POST(
                 console.log('Detected: Landscape');
             } else if (aspectRatio < 0.9) {
                 // Portrait
-                ORIGINAL_IMAGE_WIDTH = 614;
-                ORIGINAL_IMAGE_HEIGHT = 819;
-                ORIGINAL_IMAGE_X = 100;
-                ORIGINAL_IMAGE_Y = 1500;
+                ORIGINAL_IMAGE_WIDTH = 522;
+                ORIGINAL_IMAGE_HEIGHT = 696;
+                ORIGINAL_IMAGE_X = 300;
+                ORIGINAL_IMAGE_Y = 1400;
                 console.log('Detected: Portrait');
             } else {
                 // Square
                 ORIGINAL_IMAGE_WIDTH = 578;
                 ORIGINAL_IMAGE_HEIGHT = 578;
-                ORIGINAL_IMAGE_X = 100;
-                ORIGINAL_IMAGE_Y = 1300;
+                ORIGINAL_IMAGE_X = 270;
+                ORIGINAL_IMAGE_Y = 1400;
                 console.log('Detected: Square');
             }
 
