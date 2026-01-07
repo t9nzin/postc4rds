@@ -190,9 +190,13 @@ export async function POST(
                 .map((line, index) => `<text x="10" y="${60 + index * lineHeight}">${line}</text>`)
                 .join('\n                    ');
 
-            // Read and embed the font as base64
-            const fontPath = path.join(process.cwd(), 'public', 'fonts', 'Autography.otf');
-            const fontBuffer = fs.readFileSync(fontPath);
+            // Fetch font from Cloudinary instead of local filesystem
+            const fontUrl = 'https://res.cloudinary.com/dvn8fwibn/raw/upload/v1767483335/Autography_xiwspj.otf';
+            const fontResponse = await fetch(fontUrl);
+            if (!fontResponse.ok) {
+                throw new Error('Failed to fetch font from Cloudinary');
+            }
+            const fontBuffer = Buffer.from(await fontResponse.arrayBuffer());
             const fontBase64 = fontBuffer.toString('base64');
 
             // Create text as SVG with embedded font
