@@ -58,7 +58,7 @@ export async function POST(
         console.log('Generated image URL:', generatedImageUrl);
         console.log('Sending to:', recipientEmail);
 
-        const baseTemplatePublicId = 'base_template_pmmfwq';
+        const baseTemplatePublicId = 'postcard_template_h8hzvu';
         const baseTemplateUrl = cloudinary.url(baseTemplatePublicId, { 
             secure: true,
             format: 'jpg'
