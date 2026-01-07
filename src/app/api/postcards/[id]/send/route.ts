@@ -223,9 +223,14 @@ export async function POST(
                 </svg>
             `;
 
+            console.log('Converting SVG to PNG...');
+            console.log('SVG size:', textSvg.length, 'bytes');
+
             const textBuffer = await sharp(Buffer.from(textSvg))
                 .png()
                 .toBuffer();
+
+            console.log('Text buffer size:', textBuffer.length, 'bytes');
 
             compositeOperations.push({
                 input: textBuffer,
