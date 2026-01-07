@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { v2 as cloudinary } from 'cloudinary';
 import sharp from 'sharp';
+import fs from 'fs';
+import path from 'path';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -188,14 +190,25 @@ export async function POST(
                 .map((line, index) => `<text x="10" y="${60 + index * lineHeight}">${line}</text>`)
                 .join('\n                    ');
 
-            // Create text as SVG
+            // Read and embed the font as base64
+            const fontPath = path.join(process.cwd(), 'public', 'fonts', 'Autography.otf');
+            const fontBuffer = fs.readFileSync(fontPath);
+            const fontBase64 = fontBuffer.toString('base64');
+
+            // Create text as SVG with embedded font
             const textSvg = `
                 <svg width="600" height="${svgHeight}">
+                    <defs>
+                        <style type="text/css">
+                            @font-face {
+                                font-family: 'Autography';
+                                src: url(data:font/opentype;base64,${fontBase64}) format('opentype');
+                                font-weight: normal;
+                                font-style: normal;
+                            }
+                        </style>
+                    </defs>
                     <style>
-                        @font-face {
-                            font-family: 'Autography';
-                            src: url('https://fonts.cdnfonts.com/s/16917/Autography.woff') format('woff');
-                        }
                         text {
                             font-family: 'Autography', cursive;
                             font-size: 60px;
