@@ -51,7 +51,8 @@ export default function CreatePage() {
       const cloudinaryData = await cloudinaryUpload.json();
 
       if (!cloudinaryUpload.ok) {
-        throw new Error('Failed to upload image to Cloudinary');
+        console.error('Cloudinary error:', cloudinaryData);
+        throw new Error(`Failed to upload image to Cloudinary: ${cloudinaryData.error?.message || 'Unknown error'}`);
       }
 
       const imageUrl = cloudinaryData.secure_url;
