@@ -34,14 +34,39 @@ export default function CreatePage() {
     setIsLoading(true);
 
     try {
-      // Step 1: Create postcard (uploads image to Cloudinary)
+      // Step 1: Upload image directly to Cloudinary from frontend
+      console.log('Uploading image to Cloudinary...');
+      const cloudinaryUpload = await fetch(
+        `https://api.cloudinary.com/v1_1/dvn8fwibn/image/upload`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            file: uploadedImage,
+            upload_preset: 'postcards_upload', // You'll need to create this in Cloudinary
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const cloudinaryData = await cloudinaryUpload.json();
+
+      if (!cloudinaryUpload.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+      }
+
+      const imageUrl = cloudinaryData.secure_url;
+      console.log('Image uploaded to Cloudinary:', imageUrl);
+
+      // Step 2: Create postcard with Cloudinary URL (not base64)
       const createResponse = await fetch('/api/postcards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          originalPhotoUrl: uploadedImage, // base64 string
+          originalPhotoUrl: imageUrl, // Cloudinary URL instead of base64
           aiPrompt: prompt || '', // Optional prompt
         }),
       });
