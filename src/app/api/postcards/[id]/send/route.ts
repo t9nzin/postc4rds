@@ -216,8 +216,9 @@ export async function POST(
                     </defs>
                     <style>
                         text {
-                            font-family: 'Autography', cursive;
+                            font-family: 'Autography', 'Georgia', 'Times New Roman', serif;
                             font-size: 60px;
+                            font-style: italic;
                             fill: #333333;
                         }
                     </style>
