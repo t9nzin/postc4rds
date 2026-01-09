@@ -96,10 +96,15 @@ export async function POST(
         let ORIGINAL_IMAGE_WIDTH, ORIGINAL_IMAGE_HEIGHT, ORIGINAL_IMAGE_X, ORIGINAL_IMAGE_Y;
 
         if (originalPhoto) {
-            const metadata = await sharp(originalPhoto).metadata();
+            // Auto-rotate based on EXIF orientation before getting dimensions
+            const rotatedPhoto = await sharp(originalPhoto)
+                .rotate() // Respects EXIF orientation
+                .toBuffer();
+
+            const metadata = await sharp(rotatedPhoto).metadata();
             const aspectRatio = metadata.width! / metadata.height!;
 
-            console.log('Original photo dimensions:', metadata.width, 'x', metadata.height, '- Aspect ratio:', aspectRatio.toFixed(2));
+            console.log('Original photo dimensions (after EXIF rotation):', metadata.width, 'x', metadata.height, '- Aspect ratio:', aspectRatio.toFixed(2));
 
             if (aspectRatio > 1.1) {
                 // Landscape
@@ -124,7 +129,7 @@ export async function POST(
                 console.log('Detected: Square');
             }
 
-            resizedOriginal = await sharp(originalPhoto)
+            resizedOriginal = await sharp(rotatedPhoto)
                 .resize(ORIGINAL_IMAGE_WIDTH, ORIGINAL_IMAGE_HEIGHT, { fit: 'cover' })
                 .toBuffer();
         }
