@@ -192,33 +192,15 @@ export async function POST(
                 .map((line, index) => `<text x="10" y="${60 + index * lineHeight}">${line}</text>`)
                 .join('\n                    ');
 
-            // Fetch font from Cloudinary instead of local filesystem
-            const fontUrl = 'https://res.cloudinary.com/dvn8fwibn/raw/upload/v1767483335/Autography_xiwspj.otf';
-            const fontResponse = await fetch(fontUrl);
-            if (!fontResponse.ok) {
-                throw new Error('Failed to fetch font from Cloudinary');
-            }
-            const fontBuffer = Buffer.from(await fontResponse.arrayBuffer());
-            const fontBase64 = fontBuffer.toString('base64');
-
-            // Create text as SVG with embedded font
+            // Create text as SVG with ONLY system fonts (no custom fonts)
+            // Testing if Sharp can render any SVG text at all on Vercel
             const textSvg = `
-                <svg width="600" height="${svgHeight}">
-                    <defs>
-                        <style type="text/css">
-                            @font-face {
-                                font-family: 'Autography';
-                                src: url(data:font/opentype;base64,${fontBase64}) format('opentype');
-                                font-weight: normal;
-                                font-style: normal;
-                            }
-                        </style>
-                    </defs>
+                <svg xmlns="http://www.w3.org/2000/svg" width="600" height="${svgHeight}">
                     <style>
                         text {
-                            font-family: 'Autography', 'Georgia', 'Times New Roman', serif;
+                            font-family: sans-serif;
                             font-size: 60px;
-                            font-style: italic;
+                            font-weight: normal;
                             fill: #333333;
                         }
                     </style>
