@@ -5,8 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { v2 as cloudinary } from 'cloudinary';
 import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
+import satori from 'satori';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -187,30 +186,55 @@ export async function POST(
             const lineHeight = 70;
             const svgHeight = Math.max(300, wrappedLines.length * lineHeight + 50);
 
-            // Create text lines for SVG with left padding
-            const textLines = wrappedLines
-                .map((line, index) => `<text x="10" y="${60 + index * lineHeight}">${line}</text>`)
-                .join('\n                    ');
+            // Fetch font from Cloudinary
+            console.log('Fetching Autography font...');
+            const fontUrl = 'https://res.cloudinary.com/dvn8fwibn/raw/upload/v1767483335/Autography_xiwspj.otf';
+            const fontResponse = await fetch(fontUrl);
+            if (!fontResponse.ok) {
+                throw new Error('Failed to fetch font from Cloudinary');
+            }
+            const fontData = await fontResponse.arrayBuffer();
 
-            // Create text as SVG with ONLY system fonts (no custom fonts)
-            // Testing if Sharp can render any SVG text at all on Vercel
-            const textSvg = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="600" height="${svgHeight}">
-                    <style>
-                        text {
-                            font-family: sans-serif;
-                            font-size: 60px;
-                            font-weight: normal;
-                            fill: #333333;
-                        }
-                    </style>
-                    ${textLines}
-                </svg>
-            `;
+            // Use satori to render text (works in serverless without fontconfig)
+            console.log('Rendering text with satori...');
+            const textSvg = await satori(
+                {
+                    type: 'div',
+                    props: {
+                        style: {
+                            display: 'flex',
+                            flexDirection: 'column',
+                            padding: '10px',
+                            width: '600px',
+                            height: `${svgHeight}px`,
+                        },
+                        children: wrappedLines.map((line) => ({
+                            type: 'div',
+                            props: {
+                                style: {
+                                    fontFamily: 'Autography',
+                                    fontSize: '60px',
+                                    color: '#333333',
+                                    lineHeight: `${lineHeight}px`,
+                                },
+                                children: line
+                            }
+                        }))
+                    }
+                } as any,
+                {
+                    width: 600,
+                    height: svgHeight,
+                    fonts: [{
+                        name: 'Autography',
+                        data: fontData,
+                        weight: 400,
+                        style: 'normal',
+                    }]
+                }
+            );
 
-            console.log('Converting SVG to PNG...');
-            console.log('SVG size:', textSvg.length, 'bytes');
-
+            console.log('Converting satori SVG to PNG...');
             const textBuffer = await sharp(Buffer.from(textSvg))
                 .png()
                 .toBuffer();
