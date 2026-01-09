@@ -36,17 +36,15 @@ export default function CreatePage() {
     try {
       // Step 1: Upload image directly to Cloudinary from frontend
       console.log('Uploading image to Cloudinary...');
+      const formData = new FormData();
+      formData.append('file', uploadedImage);
+      formData.append('upload_preset', 'postcards_upload');
+
       const cloudinaryUpload = await fetch(
         `https://api.cloudinary.com/v1_1/dvn8fwibn/image/upload`,
         {
           method: 'POST',
-          body: JSON.stringify({
-            file: uploadedImage,
-            upload_preset: 'postcards_upload', // You'll need to create this in Cloudinary
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          body: formData,
         }
       );
 
