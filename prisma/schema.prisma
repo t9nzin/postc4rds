@@ -13,8 +13,6 @@ model Postcard {
   aiPrompt          String?
   message           String?
   recipientEmail    String?
-  location          String?
-  style             String?
   status            String
   sentAt            DateTime?
   createdAt         DateTime  @default(now())
