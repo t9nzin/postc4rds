@@ -38,6 +38,13 @@ export async function POST(
             );
         }
 
+        if (message && message.length > 200) {
+            return NextResponse.json(
+                { error: "Message is too long (max 200 characters)"},
+                { status: 400 }
+            ); 
+        }
+
         const postcard = await prisma.postcard.findUnique({
             where: { id },
         });

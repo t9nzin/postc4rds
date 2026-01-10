@@ -157,10 +157,20 @@ export default function ResultPage() {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                maxLength={200}
                 placeholder="Write a personal message to include with your postcard..."
                 className="w-full h-78 px-6 py-4 rounded-2xl border border-black/20 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-black/40 transition-colors resize-none placeholder:text-black/30"
                 style={{ fontFamily: "'Instrument Serif', serif" }}
               />
+              <p
+              className={`mt-2 text-sm text-right ${
+                message.length == 200
+                  ? "text-red-500"
+                  : message.length > 170
+                  ? "text-amber-500"
+                  : "text-black/40"
+              }`}
+              >{message.length} / 200 characters</p>
             </div>
 
             {/* Email Input and Send Button */}
