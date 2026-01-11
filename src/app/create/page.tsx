@@ -102,10 +102,10 @@ export default function CreatePage() {
 
       // Step 3: Navigate to result page
       router.push(`/postcards/${postcardId}`);
+      // Keep loading state true during navigation to prevent flicker
     } catch (error) {
       console.error('Failed to generate postcard:', error);
       toast.error('Failed to generate postcard. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
