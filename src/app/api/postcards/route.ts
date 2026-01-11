@@ -16,8 +16,6 @@ export async function POST(req: Request) {
             aiPrompt,
             message,
             recipientEmail,
-            location,
-            style,
         } = body;
 
         if (!originalPhotoUrl) {
@@ -49,8 +47,6 @@ export async function POST(req: Request) {
                 aiPrompt,
                 message,
                 recipientEmail,
-                location,
-                style,
                 status: "pending",
             },
         });
