@@ -4,7 +4,7 @@ An AI postcard generator that transforms your travel photos into vintage 1940s-s
 
 ## Description
 
-Upload a photo and let AI create a unique vintage travel postcard inspired by its location and theme. Add a personal message in handwritten font, and send it to anyone via email. The final postcard includes the AI-generated vintage artwork, your original photo, and custom message composed into a beautiful keepsake. 
+Upload a photo and let AI create a unique vintage travel postcard inspired by its location and theme. Add a personal message in handwritten font, and send it to anyone via email. 
 
 I built this because one of my 2026 resolutions is to travel more, and I want to share my adventures with my friends + family in a fun, interesting way. 
 
