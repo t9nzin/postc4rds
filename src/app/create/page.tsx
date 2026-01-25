@@ -12,6 +12,8 @@ export default function CreatePage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState('Starting...');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,6 +34,8 @@ export default function CreatePage() {
     }
 
     setIsLoading(true);
+    setProgress(5);
+    setStatusMessage('Uploading your image...');
 
     try {
       // Step 1: Upload image directly to Cloudinary from frontend
@@ -81,28 +85,48 @@ export default function CreatePage() {
       const postcardId = createData.id;
       console.log('Postcard created:', postcardId);
 
-      // Step 2: Generate AI transformation
+      // Step 2: Start AI generation (non-blocking)
       console.log('Starting AI generation...');
-      const generateResponse = await fetch(`/api/postcards/${postcardId}/generate`, {
+      fetch(`/api/postcards/${postcardId}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+      }).catch(error => {
+        console.error('Error in generation request:', error);
       });
 
-      const generateData = await generateResponse.json();
+      // Step 3: Poll for progress
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResponse = await fetch(`/api/postcards/${postcardId}/status`);
+          const statusData = await statusResponse.json();
 
-      if (!generateResponse.ok) {
-        console.error('Error generating postcard:', generateData.error);
-        toast.error(`Error generating: ${generateData.error}`);
-        return;
-      }
+          // Only update progress if it moves forward (prevents race condition glitch)
+          if (statusData.generationProgress !== undefined) {
+            setProgress(prev => Math.max(prev, statusData.generationProgress));
+          }
+          if (statusData.generationStatus) {
+            setStatusMessage(statusData.generationStatus);
+          }
 
-      console.log('Generation complete!');
+          // Check if generation is complete
+          if (statusData.status === 'generated' && statusData.generationProgress === 100) {
+            clearInterval(pollInterval);
+            console.log('Generation complete!');
+            router.push(`/postcards/${postcardId}`);
+          }
+        } catch (error) {
+          console.error('Error polling status:', error);
+        }
+      }, 2000); // Poll every 2 seconds
 
-      // Step 3: Navigate to result page
-      router.push(`/postcards/${postcardId}`);
-      // Keep loading state true during navigation to prevent flicker
+      // Safety timeout after 2 minutes
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        toast.error('Generation is taking longer than expected. Please check back later.');
+        setIsLoading(false);
+      }, 120000);
     } catch (error) {
       console.error('Failed to generate postcard:', error);
       toast.error('Failed to generate postcard. Please try again.');
@@ -112,7 +136,7 @@ export default function CreatePage() {
 
   // Show loading screen when generating
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen progress={progress} statusMessage={statusMessage} />;
   }
 
   return (

@@ -34,7 +34,8 @@ export default function App() {
                 <Image
                   src="/postcard1.jpg"
                   alt="Beach sunset"
-                  fill 
+                  fill
+                  sizes="(max-width: 1023px) 288px, 320px"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -46,7 +47,8 @@ export default function App() {
                 <Image
                   src="/postcard2.jpg"
                   alt="Beach sunset"
-                  fill 
+                  fill
+                  sizes="(max-width: 1023px) 288px, 320px"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -58,7 +60,8 @@ export default function App() {
                 <Image
                   src="/postcard3.jpg"
                   alt="City architecture"
-                  fill 
+                  fill
+                  sizes="(max-width: 1023px) 288px, 320px"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -74,7 +77,8 @@ export default function App() {
               <Image
                 src="/postcard1.jpg"
                 alt="Mountain landscape"
-                fill 
+                fill
+                sizes="(max-width: 1023px) 288px, 320px"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -86,7 +90,8 @@ export default function App() {
               <Image
                 src="/postcard2.jpg"
                 alt="Beach sunset"
-                fill 
+                fill
+                sizes="(max-width: 1023px) 288px, 320px"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -99,6 +104,7 @@ export default function App() {
                 src="/postcard3.jpg"
                 alt="City architecture"
                 fill
+                sizes="(max-width: 1023px) 288px, 320px"
                 className="w-full h-full object-cover"
               />
             </div>

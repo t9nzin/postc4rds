@@ -46,6 +46,17 @@ async function getBase64FromUrl(url: string): Promise<string> {
     return Buffer.from(buffer).toString('base64');
 }
 
+// Helper to update progress
+async function updateProgress(id: string, progress: number, status: string) {
+    await prisma.postcard.update({
+        where: { id },
+        data: {
+            generationProgress: progress,
+            generationStatus: status,
+        },
+    });
+}
+
 export async function POST(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -71,9 +82,14 @@ export async function POST(
             );
         }
 
+        // Update: Starting
+        await updateProgress(id, 10, 'Preparing your image...');
+
         // Get the user's uploaded photo as base64
         const userImageBase64 = await getBase64FromUrl(postcard.originalPhotoUrl);
 
+        // Update: Analyzing
+        await updateProgress(id, 25, 'Analyzing your photo with AI...');
         console.log('Analyzing photo with Gemini Vision...');
 
         // Use Gemini Vision to analyze the photo
@@ -106,6 +122,9 @@ Example: "Paris, France - romantic city life" or "Tropical beach - leisure and r
 
         const locationTheme = visionResult.response.candidates?.[0]?.content?.parts?.[0]?.text || "scenic travel destination";
         console.log('Location theme extracted:', locationTheme);
+
+        // Update: Generating
+        await updateProgress(id, 50, 'Creating your vintage postcard...');
 
         // Build diverse postcard prompt - same location, DIFFERENT scene
         const userCustomization = postcard.aiPrompt || "";
@@ -173,6 +192,9 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
 
         console.log('Vintage postcard generated successfully');
 
+        // Update: Uploading
+        await updateProgress(id, 80, 'Finalizing your postcard...');
+
         const base64Image = `data:image/png;base64,${imageData}`;
 
         console.log('Uploading to Cloudinary...');
@@ -188,6 +210,8 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
             data: {
                 generatedImageUrl: uploadResult.secure_url,
                 status: "generated",
+                generationProgress: 100,
+                generationStatus: 'Complete!',
             },
         });
 

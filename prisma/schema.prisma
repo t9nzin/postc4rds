@@ -7,16 +7,18 @@ datasource db {
 }
 
 model Postcard {
-  id                String    @id @default(cuid())
-  originalPhotoUrl  String
-  generatedImageUrl String?
-  aiPrompt          String?
-  message           String?
-  recipientEmail    String?
-  status            String
-  sentAt            DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  originalPhotoUrl   String
+  generatedImageUrl  String?
+  aiPrompt           String?
+  message            String?
+  recipientEmail     String?
+  status             String
+  generationProgress Int       @default(0)
+  generationStatus   String?
+  sentAt             DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@index([status])
 }
