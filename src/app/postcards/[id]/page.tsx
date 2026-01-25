@@ -22,6 +22,7 @@ export default function ResultPage() {
   const [postcard, setPostcard] = useState<Postcard | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [senderName, setSenderName] = useState('');
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -62,6 +63,7 @@ export default function ResultPage() {
         },
         body: JSON.stringify({
           message,
+          senderName,
           recipientEmail: email,
         }),
       });
@@ -72,6 +74,7 @@ export default function ResultPage() {
         toast.success('Postcard sent successfully!');
         // Clear form
         setMessage('');
+        setSenderName('');
         setEmail('');
       } else {
         toast.error(`Error: ${data.error}`);
@@ -129,9 +132,9 @@ export default function ResultPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
-          {/* Left Column: Postcard and Download */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+          {/* Left Column: Postcard */}
+          <div>
             <div className="aspect-[4/3] rounded-2xl border border-black/10 bg-white/50 backdrop-blur-xl shadow-2xl overflow-hidden">
               <img
                 src={postcard.generatedImageUrl || postcard.originalPhotoUrl}
@@ -139,63 +142,73 @@ export default function ResultPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-            
-            {/* Download Button */}
-            <button className="w-full px-8 h-14 border border-black/20 text-black hover:bg-black/5 transition-all duration-300 rounded-full inline-flex items-center justify-center gap-2">
-              <Download className="w-5 h-5" />
-              Download Postcard
-            </button>
           </div>
 
-          {/* Right Column: Message and Send */}
-          <div className="space-y-6 flex flex-col">
-            {/* Optional Message */}
-            <div className="flex-1">
-              <label className="block text-2xl mb-4">
-                Message <span className="text-black/40 text-lg">(optional)</span>
-              </label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                maxLength={200}
-                placeholder="Write a personal message to include with your postcard..."
-                className="w-full h-78 px-6 py-4 rounded-2xl border border-black/20 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-black/40 transition-colors resize-none placeholder:text-black/30"
+          {/* Right Column: Message */}
+          <div>
+            <label className="block text-2xl mb-4">
+              Message <span className="text-black/40 text-lg">(optional)</span>
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={200}
+              placeholder="Write a personal message to include with your postcard..."
+              className="w-full h-[400px] px-6 py-4 rounded-2xl border border-black/20 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-black/40 transition-colors resize-none placeholder:text-black/30"
+              style={{ fontFamily: "'Instrument Serif', serif" }}
+            />
+            <p
+            className={`mt-2 text-sm text-right ${
+              message.length == 200
+                ? "text-red-500"
+                : message.length > 170
+                ? "text-amber-500"
+                : "text-black/40"
+            }`}
+            >{message.length} / 200 characters</p>
+          </div>
+        </div>
+
+        {/* Bottom Row: Sender Name and Send To side by side */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+          {/* Sender Name */}
+          <div>
+            <label className="block text-2xl mb-4">
+              Your name <span className="text-black/40 text-lg">(optional, but recommended)</span>
+            </label>
+            <input
+              type="text"
+              value={senderName}
+              onChange={(e) => setSenderName(e.target.value)}
+              maxLength={50}
+              placeholder="Your name"
+              className="w-full h-14 px-6 rounded-full border border-black/20 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-black/40 transition-colors placeholder:text-black/30"
+              style={{ fontFamily: "'Instrument Serif', serif" }}
+            />
+          </div>
+
+          {/* Send To */}
+          <div>
+            <label className="block text-2xl mb-4">
+              Send to
+            </label>
+            <div className="flex gap-4 items-center">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="recipient@email.com"
+                className="flex-1 h-14 px-6 rounded-full border border-black/20 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-black/40 transition-colors placeholder:text-black/30"
                 style={{ fontFamily: "'Instrument Serif', serif" }}
               />
-              <p
-              className={`mt-2 text-sm text-right ${
-                message.length == 200
-                  ? "text-red-500"
-                  : message.length > 170
-                  ? "text-amber-500"
-                  : "text-black/40"
-              }`}
-              >{message.length} / 200 characters</p>
-            </div>
-
-            {/* Email Input and Send Button */}
-            <div>
-              <label className="block text-2xl mb-4">
-                Send to
-              </label>
-              <div className="flex gap-4 items-center">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="recipient@email.com"
-                  className="flex-1 h-14 px-6 rounded-full border border-black/20 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-black/40 transition-colors placeholder:text-black/30"
-                  style={{ fontFamily: "'Instrument Serif', serif" }}
-                />
-                <button
-                  onClick={handleSendPostcard}
-                  disabled={sending}
-                  className="h-14 px-8 bg-black text-white hover:bg-black/70 disabled:bg-black/40 disabled:cursor-not-allowed transition-all duration-300 rounded-full flex items-center justify-center gap-2 whitespace-nowrap"
-                >
-                  <Send className="w-5 h-5" />
-                  {sending ? 'Sending...' : 'Send'}
-                </button>
-              </div>
+              <button
+                onClick={handleSendPostcard}
+                disabled={sending}
+                className="h-14 px-8 bg-black text-white hover:bg-black/70 disabled:bg-black/40 disabled:cursor-not-allowed transition-all duration-300 rounded-full flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <Send className="w-5 h-5" />
+                {sending ? 'Sending...' : 'Send'}
+              </button>
             </div>
           </div>
         </div>

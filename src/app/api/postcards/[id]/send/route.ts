@@ -29,7 +29,12 @@ export async function POST(
     try {
         const { id } = await params;
         const body = await req.json();
-        const { message, recipientEmail } = body;
+        const { message, senderName, recipientEmail } = body;
+
+        const safeSenderName =
+        senderName && senderName.trim().length > 0
+            ? senderName
+            : "Someone";
 
         if (!recipientEmail) {
             return NextResponse.json(
@@ -288,7 +293,7 @@ export async function POST(
         <body style="font-family:Georgia,serif;background:#ffffff;margin:0;padding:40px 20px;">
         <div style="max-width:600px;margin:0 auto;background:white;padding:20px;border-radius:8px;">
             <p style="text-align:center;color:#666;margin-bottom:20px;font-size:14px;">
-            sent with <3 from a friend
+            ${senderName} sent you a postcard!
             </p>
             <img src="${compositeImageUrl}" alt="Your postcard" style="width:100%;display:block;border-radius:4px;">
             <p style="text-align:center;margin-top:20px;font-size:14px;">
@@ -312,6 +317,7 @@ export async function POST(
             where: { id },
             data: {
                 message,
+                senderName,
                 recipientEmail,
                 status: "sent",
                 sentAt: new Date(),

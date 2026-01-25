@@ -12,6 +12,7 @@ model Postcard {
   generatedImageUrl  String?
   aiPrompt           String?
   message            String?
+  senderName         String?
   recipientEmail     String?
   status             String
   generationProgress Int       @default(0)
