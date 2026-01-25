@@ -85,32 +85,32 @@ export default function CreatePage() {
       const postcardId = createData.id;
       console.log('Postcard created:', postcardId);
 
-      // Step 2: Start AI generation (check for rate limit first)
+      // Step 2: Start AI generation (non-blocking, handle errors in background)
       console.log('Starting AI generation...');
-      const generateResponse = await fetch(`/api/postcards/${postcardId}/generate`, {
+      fetch(`/api/postcards/${postcardId}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+      }).then(async (response) => {
+        if (response.status === 429) {
+          const errorData = await response.json();
+          toast.error(errorData.error || 'Rate limit exceeded. Please try again later.');
+          setIsLoading(false);
+          return;
+        }
+        if (!response.ok) {
+          const errorData = await response.json();
+          toast.error(errorData.error || 'Failed to generate postcard');
+          setIsLoading(false);
+        }
+      }).catch(error => {
+        console.error('Error in generation request:', error);
+        toast.error('Failed to start generation. Please try again.');
+        setIsLoading(false);
       });
 
-      // Handle rate limit error
-      if (generateResponse.status === 429) {
-        const errorData = await generateResponse.json();
-        toast.error(errorData.error || 'Rate limit exceeded. Please try again later.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Handle other generation errors
-      if (!generateResponse.ok) {
-        const errorData = await generateResponse.json();
-        toast.error(errorData.error || 'Failed to start generation');
-        setIsLoading(false);
-        return;
-      }
-
-      // Step 3: Poll for progress
+      // Step 3: Poll for progress (starts immediately, doesn't wait for generation)
       const pollInterval = setInterval(async () => {
         try {
           const statusResponse = await fetch(`/api/postcards/${postcardId}/status`);
