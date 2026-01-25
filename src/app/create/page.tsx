@@ -113,6 +113,7 @@ export default function CreatePage() {
           // Check if generation is complete
           if (statusData.status === 'generated' && statusData.generationProgress === 100) {
             clearInterval(pollInterval);
+            clearTimeout(safetyTimeout);
             console.log('Generation complete!');
             router.push(`/postcards/${postcardId}`);
           }
@@ -122,7 +123,7 @@ export default function CreatePage() {
       }, 2000); // Poll every 2 seconds
 
       // Safety timeout after 2 minutes
-      setTimeout(() => {
+      const safetyTimeout = setTimeout(() => {
         clearInterval(pollInterval);
         toast.error('Generation is taking longer than expected. Please check back later.');
         setIsLoading(false);
