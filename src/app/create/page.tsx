@@ -85,16 +85,30 @@ export default function CreatePage() {
       const postcardId = createData.id;
       console.log('Postcard created:', postcardId);
 
-      // Step 2: Start AI generation (non-blocking)
+      // Step 2: Start AI generation (check for rate limit first)
       console.log('Starting AI generation...');
-      fetch(`/api/postcards/${postcardId}/generate`, {
+      const generateResponse = await fetch(`/api/postcards/${postcardId}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-      }).catch(error => {
-        console.error('Error in generation request:', error);
       });
+
+      // Handle rate limit error
+      if (generateResponse.status === 429) {
+        const errorData = await generateResponse.json();
+        toast.error(errorData.error || 'Rate limit exceeded. Please try again later.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Handle other generation errors
+      if (!generateResponse.ok) {
+        const errorData = await generateResponse.json();
+        toast.error(errorData.error || 'Failed to start generation');
+        setIsLoading(false);
+        return;
+      }
 
       // Step 3: Poll for progress
       const pollInterval = setInterval(async () => {

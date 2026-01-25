@@ -17,6 +17,8 @@
     "@google-cloud/vertexai": "^1.10.0",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.1",
     "cloudinary": "^2.8.0",
     "lucide-react": "^0.562.0",
     "next": "16.0.10",

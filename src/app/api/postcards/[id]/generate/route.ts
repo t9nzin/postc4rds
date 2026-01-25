@@ -4,6 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { PredictionServiceClient } from '@google-cloud/aiplatform';
 import { helpers } from '@google-cloud/aiplatform';
 import { VertexAI } from '@google-cloud/vertexai';
+import { generationRateLimit, getClientIP } from "@/lib/ratelimit";
 
 cloudinary.config({
     cloudinary_url: process.env.CLOUDINARY_URL
@@ -62,6 +63,36 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        // Safety: Check if generation is disabled
+        if (process.env.DISABLE_GENERATION === 'true') {
+            return NextResponse.json(
+                { error: "Generation is temporarily unavailable. Please try again later." },
+                { status: 503 }
+            );
+        }
+
+        // Rate limiting: Prevent abuse
+        const ip = getClientIP(req);
+        const { success, limit, remaining, reset } = await generationRateLimit.limit(ip);
+
+        if (!success) {
+            const resetDate = new Date(reset);
+            return NextResponse.json(
+                {
+                    error: "Rate limit exceeded. You can generate up to 3 postcards per hour.",
+                    retryAfter: resetDate.toISOString()
+                },
+                {
+                    status: 429,
+                    headers: {
+                        "X-RateLimit-Limit": limit.toString(),
+                        "X-RateLimit-Remaining": remaining.toString(),
+                        "X-RateLimit-Reset": reset.toString(),
+                    }
+                }
+            );
+        }
+
         const { id } = await params;
 
         const postcard = await prisma.postcard.findUnique({
