@@ -293,12 +293,12 @@ export async function POST(
         <body style="font-family:Georgia,serif;background:#ffffff;margin:0;padding:40px 20px;">
         <div style="max-width:600px;margin:0 auto;background:white;padding:20px;border-radius:8px;">
             <p style="text-align:center;color:#666;margin-bottom:20px;font-size:14px;">
-            ${senderName} sent you a postcard!
+            ${safeSenderName} sent you a postcard!
             </p>
             <img src="${compositeImageUrl}" alt="Your postcard" style="width:100%;display:block;border-radius:4px;">
             <p style="text-align:center;margin-top:20px;font-size:14px;">
-            <a href="https://postc4rds.xyz" style="color:#666;text-decoration:none;">
-                postc4rds.xyz
+            <a href="https://postc4rds.com" style="color:#666;text-decoration:none;">
+                postc4rds.com
             </a>
             </p>
         </div>
@@ -307,7 +307,7 @@ export async function POST(
 
         console.log('Sending email...');
         const emailData = await resend.emails.send({
-            from: "postc4rds.xyz <onboarding@resend.dev>",
+            from: "postc4rds <noreply@postc4rds.com>",
             to: recipientEmail,
             subject: "You've received a postcard!",
             html: emailHtml,
