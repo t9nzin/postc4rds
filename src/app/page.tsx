@@ -11,12 +11,12 @@ export default function App() {
           {/* Left: Heading */}
           <div>
             <p className="text-xl text-black md:text-2xl mb-8">
-              postc4rds from the <em>heart</em>
+              turn your memories into mail
             </p>
             
             <h1 className="text-6xl text-black md:text-8xl leading-[0.95] tracking-tight">
-              create bespoke,<br />
-              <em>beautiful</em> postcards
+              send ur friends <br />
+              <em>email</em> postcards
             </h1>
             
             <Link href="/create">
