@@ -11,13 +11,8 @@ const redis = new Redis({
 // BUDGET HARD STOP - Global spending limit
 // ============================================
 
-// Maximum budget in dollars - change this value to adjust your limit
 const BUDGET_LIMIT_DOLLARS = 395; 
-
-// Estimated cost per generation (Gemini Vision + Imagen 3 Fast)
-// Adjust based on your actual usage - this is conservative
 const COST_PER_GENERATION_DOLLARS = 0.20;
-
 const BUDGET_KEY = "budget:total_spent_cents";
 
 /**
@@ -52,7 +47,6 @@ export async function releaseBudget(): Promise<void> {
   await redis.decrby(BUDGET_KEY, costCents);
 }
 
-// Rate limit: 3 generations per hour per IP
 export const generationRateLimit = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(3, "1 h"),

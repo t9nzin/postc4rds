@@ -175,7 +175,7 @@ export default function CreatePage() {
             create your <em>postcard</em>
           </h1>
           <p className="text-xl md:text-2xl text-black/60">
-            Upload an image and let AI transform it into something beautiful
+            Upload an image to include in your postcard
           </p>
         </div>
 
