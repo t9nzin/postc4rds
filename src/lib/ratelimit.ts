@@ -12,7 +12,7 @@ const redis = new Redis({
 // ============================================
 
 // Maximum budget in dollars - change this value to adjust your limit
-const BUDGET_LIMIT_DOLLARS = 0.40; // TODO: Change back to 400 for production
+const BUDGET_LIMIT_DOLLARS = 395; 
 
 // Estimated cost per generation (Gemini Vision + Imagen 3 Fast)
 // Adjust based on your actual usage - this is conservative
