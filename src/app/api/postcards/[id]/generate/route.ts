@@ -4,7 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { PredictionServiceClient } from '@google-cloud/aiplatform';
 import { helpers } from '@google-cloud/aiplatform';
 import { VertexAI } from '@google-cloud/vertexai';
-import { generationRateLimit, getClientIP } from "@/lib/ratelimit";
+import { generationRateLimit, getClientIP, reserveBudget, releaseBudget } from "@/lib/ratelimit";
 
 cloudinary.config({
     cloudinary_url: process.env.CLOUDINARY_URL
@@ -62,6 +62,10 @@ export async function POST(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    // Track budget state outside try block for proper cleanup
+    let budgetReserved = false;
+    let budgetConsumed = false;
+
     try {
         // Safety: Check if generation is disabled
         if (process.env.DISABLE_GENERATION === 'true') {
@@ -71,7 +75,7 @@ export async function POST(
             );
         }
 
-        // Rate limiting: Prevent abuse
+        // Rate limiting FIRST (before reserving budget) - prevents budget leak on rate limit
         const ip = getClientIP(req);
         const { success, limit, remaining, reset } = await generationRateLimit.limit(ip);
 
@@ -112,6 +116,17 @@ export async function POST(
                 { status: 400 }
             );
         }
+
+        // HARD STOP: Reserve budget right before API calls (after all validation)
+        const budget = await reserveBudget();
+        if (!budget.allowed) {
+            console.error(`BUDGET LIMIT REACHED: $${budget.newTotalCents / 100} spent of $${budget.limitCents / 100} limit`);
+            return NextResponse.json(
+                { error: "Generation is temporarily unavailable. Please try again later." },
+                { status: 503 }
+            );
+        }
+        budgetReserved = true;
 
         // Update: Starting
         await updateProgress(id, 10, 'Preparing your image...');
@@ -210,6 +225,9 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
 
         const [response] = await predictionClient.predict(request) as any;
 
+        // API call succeeded - budget is now consumed
+        budgetConsumed = true;
+
         if (!response || !response.predictions || response.predictions.length === 0) {
             throw new Error('No predictions returned from Vertex AI');
         }
@@ -246,6 +264,8 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
             },
         });
 
+        console.log('Generation completed, budget consumed');
+
         return NextResponse.json(
             {
                 success: true,
@@ -257,6 +277,17 @@ Style: Curt Teich chromolithograph print with painted artistic quality, vibrant 
 
     } catch (error) {
         console.error("Error generating postcard:", error);
+
+        // Release budget if we reserved it but didn't consume it (API call failed)
+        if (budgetReserved && !budgetConsumed) {
+            try {
+                await releaseBudget();
+                console.log("Budget released due to generation failure");
+            } catch (releaseError) {
+                console.error("Failed to release budget:", releaseError);
+            }
+        }
+
         return NextResponse.json(
             {
                 error: "Failed to generate postcard",

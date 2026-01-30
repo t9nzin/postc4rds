@@ -7,6 +7,51 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
+// ============================================
+// BUDGET HARD STOP - Global spending limit
+// ============================================
+
+// Maximum budget in dollars - change this value to adjust your limit
+const BUDGET_LIMIT_DOLLARS = 0.40; // TODO: Change back to 400 for production
+
+// Estimated cost per generation (Gemini Vision + Imagen 3 Fast)
+// Adjust based on your actual usage - this is conservative
+const COST_PER_GENERATION_DOLLARS = 0.20;
+
+const BUDGET_KEY = "budget:total_spent_cents";
+
+/**
+ * Atomically reserve budget BEFORE making API calls.
+ * Returns { allowed, newTotalCents } - if allowed is false, no reservation was made.
+ */
+export async function reserveBudget(): Promise<{
+  allowed: boolean;
+  newTotalCents: number;
+  limitCents: number;
+}> {
+  const limitCents = Math.round(BUDGET_LIMIT_DOLLARS * 100);
+  const costCents = Math.round(COST_PER_GENERATION_DOLLARS * 100);
+
+  // Atomically increment and get the new value
+  const newTotalCents = await redis.incrby(BUDGET_KEY, costCents);
+
+  // If we exceeded the limit, roll back and deny
+  if (newTotalCents > limitCents) {
+    await redis.decrby(BUDGET_KEY, costCents);
+    return { allowed: false, newTotalCents: newTotalCents - costCents, limitCents };
+  }
+
+  return { allowed: true, newTotalCents, limitCents };
+}
+
+/**
+ * Release reserved budget if generation fails (optional - call on error)
+ */
+export async function releaseBudget(): Promise<void> {
+  const costCents = Math.round(COST_PER_GENERATION_DOLLARS * 100);
+  await redis.decrby(BUDGET_KEY, costCents);
+}
+
 // Rate limit: 3 generations per hour per IP
 export const generationRateLimit = new Ratelimit({
   redis,
