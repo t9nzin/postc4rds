@@ -1,6 +1,6 @@
 # postc4rds
 
-An AI postcard generator that transforms your travel photos into vintage 1940s-style postcards and sends them to your loved ones via email.
+An AI postcard generator that transforms your travel photos into vintage 1940s-style postcards and sends them to your loved ones via email. Try it out at [postc4rds.com](https://postc4rds.com)
 
 <p align="left">
   <img src="postc4rds-demo.gif" height="300" />
